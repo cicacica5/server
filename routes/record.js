@@ -30,40 +30,39 @@ router.post(
             return res.status(400).json({ errors: errors.array() });
         }
 
-        // Extract info from the body
-        let {
-            visitor_id,
-            coun_id,
-            help_or_not,
-            sup_id,
-            begin_time,
-            end_time,
-        } = req.body;
+            // Extract info from the body
+            let {
+                visitor_id,
+                coun_id,
+                sup_id,
+                help_or_not,
+                begin_time,
+                end_time,
+            } = req.body;
 
-        try {
+            try {
 
-            if(!help_or_not) {
-                // Add record in the DB
-                await promisePool.query(
-                    `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", NULL, "${begin_time}", "${end_time}")`
-                );
+                if (!help_or_not) {
+                    // Add record in the DB
+                    await promisePool.query(
+                        `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", "${sup_id}", "${begin_time}", "${end_time}")`
+                    );
 
-                // Send success message to the client
-                res.send("Record created");
-            } else {
-                // Add record in the DB
-                await promisePool.query(
-                    `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", "${sup_id}", "${begin_time}", "${end_time}")`
-                );
+                    // Send success message to the client
+                    res.send("Record created");
+                } else {
+                    // Add record in the DB
+                    await promisePool.query(
+                        `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", "${sup_id}", "${begin_time}", "${end_time}")`
+                    );
 
-                // Send success message to the client
-                res.send("Record created");
-
+                    // Send success message to the client
+                    res.send("Record created");
+                }
+            } catch (err) {
+                // Catch errors
+                throw err;
             }
-        } catch (err) {
-            // Catch errors
-            throw err;
-        }
     }
 );
 
