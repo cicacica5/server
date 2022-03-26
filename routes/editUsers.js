@@ -1,9 +1,9 @@
 // Imports
 const express = require("express"); // Create router
 const bcrypt = require("bcryptjs"); // Encrypt password
-const auth = require("../../Downloads/server/middleware/auth"); // Middleware
+const auth = require("../middleware/auth"); // Middleware
 const { check, validationResult } = require("express-validator"); // Check and validate the inputs
-const promisePool = require("../../Downloads/server/config/db"); // Import instance of mysql pool
+const promisePool = require("../config/db"); // Import instance of mysql pool
 
 // Init router
 const router = express.Router();
