@@ -27,16 +27,12 @@ router.put(
             "user_password",
             "Please enter a password with 6 or more characters"
         ).isLength({ min: 6 }), // Check the password
-        check("role", "Role is required").notEmpty(), // Check the role
         check("admin_name", "Name is required").notEmpty(), // Check the admin_name
         check("admin_gender", "Gender is required").notEmpty(), // Check the gender
         check("admin_phone", "Phone is required").notEmpty(), // Check the phone
-        check("admin_id", "admin_id is required").notEmpty(), // Check the admin_id
     ],
     async(req, res) => {
         // Extract user id from req
-        const user_id = req.user_id;
-
         try {
             // Check for errors
             const errors = validationResult(req);
@@ -47,29 +43,23 @@ router.put(
 
             // Extract info from the body
             let {
+                user_id,
                 user_name,
                 user_password,
-                role,
                 admin_name,
                 admin_gender,
                 admin_phone,
-                admin_id,
             } = req.body;
 
             // Create user object
             const user = {
+                user_id,
                 user_name,
                 user_password,
-                role,
                 admin_name,
                 admin_gender,
                 admin_phone,
             };
-
-            // Check role
-            if (role !== "admin") {
-                return res.status(400).json({ msg: "Role is not valid" });
-            }
 
             // Check gender
             if (
@@ -80,20 +70,15 @@ router.put(
                 return res.status(400).json({ msg: "Gender is not valid" });
             }
 
-            // Check id
-            if (user_id !== admin_id) {
-                return res.status(400).json({ msg: "Invalid id" });
-            }
-
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_name = "${user_name}" AND user_id<>${user_id}) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id = ${user_id}) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
-            if (result) {
+            if (!result) {
                 // User already exists
-                return res.status(400).json({ msg: "User already exists" });
+                return res.status(400).json({ msg: "User doesn't exist" });
             } else {
                 // Encrypt Password
                 const salt = await bcrypt.genSalt(10);
