@@ -335,9 +335,6 @@ router.post(
           "user_password",
           "Please enter a password with 6 or more characters"
       ).isLength({ min: 6 }), // Check the password
-      check("role", "Role is required").notEmpty(), // Check the role
-      //check("visitor_name", "Name is required").notEmpty(), // Check the name
-      //check("visitor_gender", "Gender is required").notEmpty(), // Check the gender
       check("visitor_phone", "Phone is required").notEmpty(), // Check the phone
     ],
     async(req, res) => {
@@ -352,25 +349,8 @@ router.post(
       let {
         user_name,
         user_password,
-        role,
-        visitor_name,
-        visitor_gender,
         visitor_phone,
       } = req.body;
-
-      // Check role
-      if (role !== "visitor") {
-        return res.status(400).json({ msg: "Role is not valid" });
-      }
-
-      // Check gender
-      if (
-          visitor_gender !== "Male" &&
-          visitor_gender !== "Female" &&
-          visitor_gender !== "Other"
-      ) {
-        return res.status(400).json({ msg: "Gender is not valid" });
-      }
 
       try {
         // Check if user exists
@@ -381,7 +361,13 @@ router.post(
 
         if (result) {
           // User already exists
-          return res.status(400).json({ msg: "User already exists" });
+          return res.status(200).json(
+            {
+            "data":{
+              "errCode":2,
+              "errMessage":"用户名已存在！"
+              }
+            });
         } else {
           // Encrypt Password
           const salt = await bcrypt.genSalt(10);
@@ -389,7 +375,7 @@ router.post(
 
           // Add user details in the DB
           await promisePool.query(
-              `INSERT INTO login (user_name, user_password, role) VALUES ("${user_name}", "${user_password}", "${role}")`
+              `INSERT INTO login (user_name, user_password, role) VALUES ("${user_name}", "${user_password}", "visitor")`
           );
 
           // Create payload for token
