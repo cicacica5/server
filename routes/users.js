@@ -336,8 +336,8 @@ router.post(
           "Please enter a password with 6 or more characters"
       ).isLength({ min: 6 }), // Check the password
       check("role", "Role is required").notEmpty(), // Check the role
-      check("visitor_name", "Name is required").notEmpty(), // Check the name
-      check("visitor_gender", "Gender is required").notEmpty(), // Check the gender
+      //check("visitor_name", "Name is required").notEmpty(), // Check the name
+      //check("visitor_gender", "Gender is required").notEmpty(), // Check the gender
       check("visitor_phone", "Phone is required").notEmpty(), // Check the phone
     ],
     async(req, res) => {
