@@ -175,10 +175,8 @@ router.put(
                 visitor_gender !== "Other"
             ) {
                 return res.status(200).json({
-                    "data": {
                         "errCode": 3,
                         "errMessage": "性别非法（请填写Male/Female/Other）"
-                    }
                 });
             }
 
@@ -195,13 +193,9 @@ router.put(
                 );
 
                 return res.status(200).json({
-                    "data": {
                         "errCode": 0,
                         "errMessage": "成功"
-                    }
                 });
-
-
                 } catch (err) {
                     // Catch errors
                     throw err;
