@@ -14,22 +14,22 @@ const router = express.Router();
  * 注册访客
  */
 
-// @route   POST /users/wx/visitor
+// @route   POST /wx-users/register
 // @desc    注册访客
 // @access  Public
 router.post(
-    "/wx-users/register", [
+    "/register", [
       check("user_name", "username is required").notEmpty(), // Check the username
       check(
           "user_password",
           "Please enter a password with 6 or more characters"
       ).isLength({ min: 6 }), // Check the password
-      check("visitor_phone_empty", "Phone is required").notEmpty(), // Check the phone
-      check("visitor_phone_invaild", 
+      check("visitor_phone", "Phone is required").notEmpty(), // Check the phone
+      check("visitor_phone", 
             "Please enter phone number with 11 nums.").isLength(11), // Check the phone
     ],
     async(req, res) => {
-      // Check for errors
+      // Check for errorsy
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         // Return the errors
