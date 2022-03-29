@@ -82,22 +82,6 @@ router.post(
         const [rows] = await promisePool.query(
           `SELECT user_id from login WHERE user_name='${user_name}'`
         );
-<<<<<<< HEAD
-=======
-        const result = rows[0].EXISTS;
-
-        if (result) {
-          // User already exists
-          return res.status(200).json(
-            {
-              "errCode":2,
-              "errMessage":"用户名已存在！"
-            });
-        }else {
-          // Encrypt Password
-          const salt = await bcrypt.genSalt(10);
-          user_password = await bcrypt.hash(user_password, salt);
->>>>>>> 7eb8f137de9f79377e8ce06a9bee83e0ffac4bb3
 
         // Store user id in payload for token
         const user_id = rows[0].user_id;
@@ -218,8 +202,6 @@ router.post(
           const [existence] = await promisePool.query(
               `SELECT EXISTS(SELECT * from login WHERE user_name= "${userName}" ) 'EXISTS' FROM dual`
           );
-
-<<<<<<< HEAD
           // Extract the bool
           const result = existence[0].EXISTS;
 
