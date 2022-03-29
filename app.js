@@ -30,6 +30,7 @@ app.use("/schedule", require("./routes/schedule"));
 app.use("/record", require("./routes/record"));
 app.use("/feedback", require("./routes/feedback"));
 app.use("/admin", require("./routes/admin"));
+app.use("/wx-users", require("./routes/wx-users"));
 //app.use("/counsellor", require("./routes/counsellor"));
 //app.use("/supervisor", require("./routes/supervisor"));
 //app.use("/visitor", require("./routes/visitor"));
