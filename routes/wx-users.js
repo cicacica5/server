@@ -148,8 +148,6 @@ router.put(
                 `SELECT user_id from login WHERE user_name = "${user_name}"`
             );
             const user_id = rows[0].user_id;
-            console.log(user_id);
-
 
             // Create user object
             let user = {
@@ -207,4 +205,53 @@ router.put(
     }
 );
 
+// @route   GET /wx-users/getConsultList
+// @desc    获取咨询记录列表
+// @access  Public
+
+router.get(
+    "/getConsultList", [
+        check("user_name", "username is required").notEmpty(), // Check the userID
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+    // Extract userEmail and password from the body
+    const user_name = req.body.user_name;
+
+    // Use user_name select user_id
+    const [rows] = await  promisePool.query(
+        `SELECT user_id from login WHERE user_name = "${user_name}"`
+    );
+    const user_id = rows[0].user_id;
+    const visitor_id = user_id;
+
+        try {
+            // Check if record exists
+            const [rows] = await promisePool.query(
+                `SELECT * FROM record WHERE visitor_id = "${user_id}"`
+            );
+            const result = rows[0];
+
+            if (!result) {
+                // Schedule already exists
+                return res.status(200).json({
+                    "errCode": 4,
+                    "errMessage": "该用户暂无咨询记录"                    
+                });
+            } else {
+                // Send success message to the client
+                res.send(rows);
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
 module.exports = router;
