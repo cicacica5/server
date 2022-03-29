@@ -55,10 +55,8 @@ router.post(
           // User already exists
           return res.status(200).json(
             {
-            "data":{
               "errCode":2,
               "errMessage":"用户名已存在！"
-              }
             });
         }else {
           // Encrypt Password
@@ -100,10 +98,8 @@ router.post(
           // Send success message to the client
           return res.status(200).json(
             {
-            "data":{
               "errCode":0,
               "errMessage":"成功"
-              }
             });
         }
       } catch (err) {
@@ -136,15 +132,9 @@ router.put(
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const user_name = req.user_name;
-
-            // Use user_name select id
-            user_id = await promisePool.query(
-                `SELECT user_id from login WHERE user_name = "${user_name}"`
-            );
-
             // Extract info from the body
             let {
+                user_name,
                 visitor_name,
                 visitor_phone,
                 visitor_gender,
@@ -152,6 +142,14 @@ router.put(
                 emergency_name, // 紧急联系人
                 emergency_phone,// 紧急联系人电话
             } = req.body;
+
+            // Use user_name select id
+            const [rows] = await  promisePool.query(
+                `SELECT user_id from login WHERE user_name = "${user_name}"`
+            );
+            const user_id = rows[0].user_id;
+            console.log(user_id);
+
 
             // Create user object
             let user = {
@@ -185,7 +183,6 @@ router.put(
             }
 
             try {
-
                 // Update details in students table
                 await promisePool.query(
                     `UPDATE visitor SET visitor_name='${visitor_name}',
@@ -194,7 +191,7 @@ router.put(
                     visitor_avatar='${visitor_avatar}',
                     emergency_name='${emergency_name}',
                     emergency_phone='${emergency_phone}'
-                    WHERE visitor_id='${user_id}'`
+                    WHERE visitor_id=${user_id}`
                 );
 
                 return res.status(200).json({
