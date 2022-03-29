@@ -121,7 +121,7 @@ router.get(
   "/getVisitorInfo",
   async (req, res) => {
     // Extract user id from req
-    const user_name = req.body.user_name;
+    const user_name = req.query.user_name;
 
     try {
       // Get user_name and role from DB
