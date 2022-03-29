@@ -82,6 +82,22 @@ router.post(
         const [rows] = await promisePool.query(
           `SELECT user_id from login WHERE user_name='${user_name}'`
         );
+<<<<<<< HEAD
+=======
+        const result = rows[0].EXISTS;
+
+        if (result) {
+          // User already exists
+          return res.status(200).json(
+            {
+              "errCode":2,
+              "errMessage":"用户名已存在！"
+            });
+        }else {
+          // Encrypt Password
+          const salt = await bcrypt.genSalt(10);
+          user_password = await bcrypt.hash(user_password, salt);
+>>>>>>> 7eb8f137de9f79377e8ce06a9bee83e0ffac4bb3
 
         // Store user id in payload for token
         const user_id = rows[0].user_id;
@@ -203,6 +219,7 @@ router.post(
               `SELECT EXISTS(SELECT * from login WHERE user_name= "${userName}" ) 'EXISTS' FROM dual`
           );
 
+<<<<<<< HEAD
           // Extract the bool
           const result = existence[0].EXISTS;
 
@@ -249,7 +266,106 @@ router.post(
   }
 );
 
+// @route   PUT /wx-users/editInfo
+// @desc    修改访客信息
+// @access  Private
+router.put(
+    "/editInfo", [
+        //auth,
+        check("user_name", "user_name is required").notEmpty(), // Check the user_name
+        check("visitor_name", "visitor_name is required").notEmpty(), // Check the visitor_name
+        check("visitor_phone", "Phone is required").notEmpty(), // Check the phone
+        check("visitor_phone", 
+        "Please enter phone number with 11 nums.").isLength(11), // Check the phone
+
+    ],
+    async(req, res) => {
+
+        try {
+            // Check for errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                // Return the errors
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            // Extract info from the body
+            let {
+                user_name,
+                visitor_name,
+                visitor_phone,
+                visitor_gender,
+                visitor_avatar, // 头像url
+                emergency_name, // 紧急联系人
+                emergency_phone,// 紧急联系人电话
+            } = req.body;
+
+            // Use user_name select id
+            const [rows] = await  promisePool.query(
+                `SELECT user_id from login WHERE user_name = "${user_name}"`
+            );
+            const user_id = rows[0].user_id;
+            console.log(user_id);
+
+            // Create user object
+            let user = {
+                user_id,
+                user_name,
+                visitor_name,
+                visitor_gender,
+                visitor_phone,
+                visitor_avatar, // 头像url
+                emergency_name, // 紧急联系人
+                emergency_phone,// 紧急联系人电话                
+            };
 
 
+            
+            // Check gender
+            // gender == null
+            if(!visitor_gender){
+                visitor_gender = "Other";
+            } else if (
+                visitor_gender !== "Male" &&
+                visitor_gender !== "Female" &&
+                visitor_gender !== "Other"
+            ) {
+                return res.status(200).json({
+                    "data": {
+                        "errCode": 3,
+                        "errMessage": "性别非法（请填写Male/Female/Other）"
+                    }
+                });
+            }
+
+            try {
+                // Update details in students table
+                await promisePool.query(
+                    `UPDATE visitor SET visitor_name='${visitor_name}',
+                    visitor_phone='${visitor_phone}',
+                    visitor_gender='${visitor_gender}',
+                    visitor_avatar='${visitor_avatar}',
+                    emergency_name='${emergency_name}',
+                    emergency_phone='${emergency_phone}'
+                    WHERE visitor_id=${user_id}`
+                );
+
+                return res.status(200).json({
+                    "data": {
+                        "errCode": 0,
+                        "errMessage": "成功"
+                    }
+                });
+
+                } catch (err) {
+                    // Catch errors
+                    throw err;
+                }
+            } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
 
 module.exports = router;
