@@ -384,7 +384,7 @@ router.get(
           "errMessage": "该用户暂无咨询记录"
         });
       } else {
-    //     // Send success message to the client
+        // Send success message to the client
         return res.status(200).json({
             "code": 0,
             "consultList": rows
@@ -406,7 +406,7 @@ router.get(
 
     // 
     const [rows] = await promisePool.query(
-      `SELECT counsellor.coun_name, counsellor.coun_avatar, counsellor.coun_status, round(avg(score),2) as coun_avg_score
+      `SELECT counsellor.coun_id, counsellor.coun_name, counsellor.coun_avatar, counsellor.coun_status, round(avg(score),2) as coun_avg_score
       FROM counsellor JOIN feedback
       ON counsellor.coun_id = feedback.target_id
       GROUP BY counsellor.coun_id`
@@ -435,5 +435,35 @@ router.get(
   }
 );
 
+// @route GET /wx-users/schedule/getCounsellorStatus
+// @desc  获取某咨询师状态
+// @access  Public
+router.get(
+  "/schedule/getCounsellorStatus",
+  async (req, res) => {
+    const coun_id = req.query.coun_id;
+
+    try {
+      const [rows] = await promisePool.query(
+        `SELECT coun_status FROM counsellor WHERE coun_id = ${coun_id}`
+      );
+      const row = rows[0];
+
+      if (row == undefined) {
+        return res.status(200).json({
+          "errCode": 9,
+          "errMessage": "该咨询师不存在"
+        });
+      } else {
+        return res.status(200).json({
+          "code": 0,
+          "coun_status": row.coun_status
+        });
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+);
 
 module.exports = router;
