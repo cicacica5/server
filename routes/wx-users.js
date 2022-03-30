@@ -290,36 +290,36 @@ router.put(
       } = req.body;
 
       // Use user_name select id
-      const [rows] = await  promisePool.query(
-          `SELECT user_id from login WHERE user_name = "${user_name}"`
+      const [rows] = await promisePool.query(
+        `SELECT user_id from login WHERE user_name = "${user_name}"`
       );
       const user_id = rows[0].user_id;
 
       // Create user object
       let user = {
-          user_id,
-          user_name,
-          visitor_name,
-          visitor_gender,
-          visitor_phone,
-          visitor_avatar, // 头像url
-          emergency_name, // 紧急联系人
-          emergency_phone,// 紧急联系人电话                
+        user_id,
+        user_name,
+        visitor_name,
+        visitor_gender,
+        visitor_phone,
+        visitor_avatar, // 头像url
+        emergency_name, // 紧急联系人
+        emergency_phone,// 紧急联系人电话                
       };
-            
+
       // Check gender
       // gender == null
-      if(!visitor_gender){
-          visitor_gender = "Other";
+      if (!visitor_gender) {
+        visitor_gender = "Other";
       } else if (
-          visitor_gender !== "Male" &&
-          visitor_gender !== "Female" &&
-          visitor_gender !== "Other"
+        visitor_gender !== "Male" &&
+        visitor_gender !== "Female" &&
+        visitor_gender !== "Other"
       ) {
-          return res.status(200).json({
-              "errCode": 3,
-               "errMessage": "性别非法（请填写Male/Female/Other）"
-          });
+        return res.status(200).json({
+          "errCode": 3,
+          "errMessage": "性别非法（请填写Male/Female/Other）"
+        });
       }
 
       // Check gender
@@ -352,67 +352,55 @@ router.put(
         );
 
         return res.status(200).json({
-            "errCode": 0,
-            "errMessage": "成功"
+          "errCode": 0,
+          "errMessage": "成功"
         });
-        } catch (err) {
-            // Catch errors
-            throw err;
-        }
-        } catch (err) {
-            // Catch errors
-            throw err;
-        }
+      } catch (err) {
+        // Catch errors
+        throw err;
+      }
+    } catch (err) {
+      // Catch errors
+      throw err;
     }
+  }
 );
 
-// @route   GET /wx-users/getConsultList
-// @desc    获取咨询记录列表
+// @route   GET /wx-users/record/getConsultList
+// @desc    获取访客咨询记录列表
 // @access  Public
 router.get(
-    "/getConsultList", [
-        check("user_name", "username is required").notEmpty(), // Check the userID
-    ],
-    async(req, res) => {
-        // Check for errors
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            // Return the errors
-            return res.status(400).json({ errors: errors.array() });
-        }
-
+  "/record/getConsultList", 
+  async (req, res) => {
     // Extract userEmail and password from the body
-    const user_name = req.body.user_name;
+    const user_name = req.query.user_name;
 
     // Use user_name select user_id
-    const [rows] = await  promisePool.query(
-        `SELECT user_id from login WHERE user_name = "${user_name}"`
+    const [rows] = await promisePool.query(
+      `SELECT record.record_id, record.coun_id, counsellor.coun_name, record.begin_time, record.end_time, feedback.score FROM record JOIN login JOIN counsellor JOIN feedback WHERE login.user_name = "${user_name}" AND record.visitor_id = login.user_id AND record.coun_id = counsellor.coun_id AND record.record_id = feedback.record_id AND record.visitor_id = feedback.user_id`
     );
-    const user_id = rows[0].user_id;
-    const visitor_id = user_id;
 
-        try {
-            // Check if record exists
-            const [rows] = await promisePool.query(
-                `SELECT * FROM record WHERE visitor_id = "${user_id}"`
-            );
-            const result = rows[0];
-
-            if (!result) {
-                // Schedule already exists
-                return res.status(200).json({
-                    "errCode": 4,
-                    "errMessage": "该用户暂无咨询记录"                    
-                });
-            } else {
-                // Send success message to the client
-                res.send(rows);
-            }
-        } catch (err) {
-            // Catch errors
-            throw err;
-        }
+    try {
+      // Check if record exists
+      const result = rows[0];
+      if (result==undefined) {
+        // Schedule already exists
+        return res.status(200).json({
+          "errCode": 4,
+          "errMessage": "该用户暂无咨询记录"
+        });
+      } else {
+    //     // Send success message to the client
+        return res.status(200).json({
+            "code": 0,
+            "consultList": rows
+        });
+      }
+    } catch (err) {
+      // Catch errors
+      throw err;
     }
+  }
 );
 
 // @route   GET /wx-users/getCounsellorList
@@ -421,35 +409,35 @@ router.get(
 router.get(
   "/getCounsellorList", [],
 
-  async(req, res) => {
-      // Check for errors
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-          // Return the errors
-          return res.status(400).json({ errors: errors.array() });
-      }
+  async (req, res) => {
+    // Check for errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      // Return the errors
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-      try {
-          // Get All from counsellor
-          const [rows] = await promisePool.query(
-              `SELECT * FROM counsellor`
-          );
-          const result = rows[0];
+    try {
+      // Get All from counsellor
+      const [rows] = await promisePool.query(
+        `SELECT * FROM counsellor`
+      );
+      const result = rows[0];
 
-          if (!result) {
-              // Schedule already exists
-              return res.status(200).json({
-                  "errCode": 5,
-                  "errMessage": "当前无咨询师"                    
-              });
-          } else {
-              // Send success message to the client
-              res.send(rows);
-          }
-      } catch (err) {
-          // Catch errors
-          throw err;
+      if (!result) {
+        // Schedule already exists
+        return res.status(200).json({
+          "errCode": 5,
+          "errMessage": "当前无咨询师"
+        });
+      } else {
+        // Send success message to the client
+        res.send(rows);
       }
+    } catch (err) {
+      // Catch errors
+      throw err;
+    }
   }
 );
 
