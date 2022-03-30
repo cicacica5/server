@@ -101,10 +101,8 @@ router.post(
         // Send success message to the client
         return res.status(200).json(
           {
-            "data": {
-              "errCode": 0,
-              "errMessage": "成功"
-            }
+            "errCode": 0,
+            "errMessage": "成功"
           });
       }
     } catch (err) {
@@ -370,7 +368,7 @@ router.put(
 // @desc    获取访客咨询记录列表
 // @access  Public
 router.get(
-  "/record/getConsultList", 
+  "/record/getConsultList",
   async (req, res) => {
     // Extract userEmail and password from the body
     const user_name = req.query.user_name;
@@ -383,17 +381,17 @@ router.get(
     try {
       // Check if record exists
       const result = rows[0];
-      if (result==undefined) {
+      if (result == undefined) {
         // Schedule already exists
         return res.status(200).json({
           "errCode": 4,
           "errMessage": "该用户暂无咨询记录"
         });
       } else {
-    //     // Send success message to the client
+        //     // Send success message to the client
         return res.status(200).json({
-            "code": 0,
-            "consultList": rows
+          "code": 0,
+          "consultList": rows
         });
       }
     } catch (err) {
@@ -407,7 +405,7 @@ router.get(
 // @desc    获取访客咨询记录列表
 // @access  Public
 router.get(
-  "/record/getConsultList", 
+  "/record/getConsultList",
   async (req, res) => {
     // Extract userEmail and password from the body
     const user_name = req.query.user_name;
@@ -420,17 +418,17 @@ router.get(
     try {
       // Check if record exists
       const result = rows[0];
-      if (result==undefined) {
+      if (result == undefined) {
         // Schedule already exists
         return res.status(200).json({
           "errCode": 4,
           "errMessage": "该用户暂无咨询记录"
         });
       } else {
-    //     // Send success message to the client
+        //     // Send success message to the client
         return res.status(200).json({
-            "code": 0,
-            "consultList": rows
+          "code": 0,
+          "consultList": rows
         });
       }
     } catch (err) {
