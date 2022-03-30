@@ -490,4 +490,77 @@ router.put(
   }
 );
 
+// @route GET /wx-users/schedule/getCounsellorStatus
+// @desc  获取某咨询师状态
+// @access  Public
+router.get(
+  "/schedule/getCounsellorStatus",
+  async (req, res) => {
+    const coun_id = req.query.coun_id;
+
+    try {
+      const [rows] = await promisePool.query(
+        `SELECT coun_status FROM counsellor WHERE coun_id = ${coun_id}`
+      );
+      const row = rows[0];
+
+      if (row == undefined) {
+        return res.status(200).json({
+          "errCode": 9,
+          "errMessage": "该咨询师不存在"
+        });
+      } else {
+        return res.status(200).json({
+          "code": 0,
+          "coun_status": row.coun_status
+        });
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+  );
+
+// @route   PUT /wx-users/addFeedbackScore
+// @desc    添加评分
+// @access  Public
+router.put(
+  "/addFeedbackScore", 
+  async (req, res) => {
+
+    try {
+      // Check for errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      // Extract info from the body
+      let {
+        visitor_id,
+        coun_id,
+        score,
+       } = req.body;
+
+      try {
+        // Update coun_status in counsellor table
+        await promisePool.query(
+          `INSERT INTO feedback(user_id, target_id, score) VALUES (${visitor_id}, ${coun_id}, ${score})`
+        );
+        return res.status(200).json({
+          "Code": 0,
+          "Message": "成功"
+        });
+      } catch (err) {
+        // Catch errors
+        throw err;
+      }
+    } catch (err) {
+      // Catch errors
+      throw err;
+    }
+  }
+);
+
 module.exports = router;
