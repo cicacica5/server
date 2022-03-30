@@ -99,15 +99,8 @@ router.post(
         // Send success message to the client
         return res.status(200).json(
           {
-<<<<<<< HEAD
             "errCode": 0,
             "errMessage": "成功"
-=======
-
-            "errCode": 0,
-            "errMessage": "成功"
-
->>>>>>> Dev_wrj
           });
       }
     } catch (err) {
@@ -408,11 +401,7 @@ router.get(
 // @desc    获取咨询师列表
 // @access  Public
 router.get(
-<<<<<<< HEAD
   "/record/getConsultList",
-=======
-  "/getCounsellorList",
->>>>>>> Dev_wrj
   async (req, res) => {
 
     // 
@@ -436,11 +425,7 @@ router.get(
         //     // Send success message to the client
         return res.status(200).json({
           "code": 0,
-<<<<<<< HEAD
-          "consultList": rows
-=======
           "counsellorList": rows
->>>>>>> Dev_wrj
         });
       }
     } catch (err) {
