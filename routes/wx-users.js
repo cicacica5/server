@@ -99,8 +99,15 @@ router.post(
         // Send success message to the client
         return res.status(200).json(
           {
+<<<<<<< HEAD
             "errCode": 0,
             "errMessage": "成功"
+=======
+
+            "errCode": 0,
+            "errMessage": "成功"
+
+>>>>>>> Dev_wrj
           });
       }
     } catch (err) {
@@ -397,18 +404,23 @@ router.get(
   }
 );
 
-// @route   GET /wx-users/record/getConsultList
-// @desc    获取访客咨询记录列表
+// @route   GET /wx-users/getCounsellorList
+// @desc    获取咨询师列表
 // @access  Public
 router.get(
+<<<<<<< HEAD
   "/record/getConsultList",
+=======
+  "/getCounsellorList",
+>>>>>>> Dev_wrj
   async (req, res) => {
-    // Extract userEmail and password from the body
-    const user_name = req.query.user_name;
 
-    // Use user_name select user_id
+    // 
     const [rows] = await promisePool.query(
-      `SELECT record.record_id, record.coun_id, counsellor.coun_name, record.begin_time, record.end_time, record.period, feedback.score FROM record JOIN login JOIN counsellor JOIN feedback WHERE login.user_name = "${user_name}" AND record.visitor_id = login.user_id AND record.coun_id = counsellor.coun_id AND record.record_id = feedback.record_id AND record.visitor_id = feedback.user_id`
+      `SELECT counsellor.coun_name, counsellor.coun_avatar, counsellor.coun_status, round(avg(score),2) as coun_avg_score
+      FROM counsellor JOIN feedback
+      ON counsellor.coun_id = feedback.target_id
+      GROUP BY counsellor.coun_id`
     );
 
     try {
@@ -417,14 +429,18 @@ router.get(
       if (result == undefined) {
         // Schedule already exists
         return res.status(200).json({
-          "errCode": 4,
-          "errMessage": "该用户暂无咨询记录"
+          "errCode": 5,
+          "errMessage": "当前无咨询师"
         });
       } else {
         //     // Send success message to the client
         return res.status(200).json({
           "code": 0,
+<<<<<<< HEAD
           "consultList": rows
+=======
+          "counsellorList": rows
+>>>>>>> Dev_wrj
         });
       }
     } catch (err) {
