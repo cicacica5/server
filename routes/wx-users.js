@@ -435,6 +435,61 @@ router.get(
   }
 );
 
+// @route   PUT /wx-users/changeCounsellorStauts
+// @desc    修改咨询师状态
+// @access  Private
+router.put(
+  "/changeCounsellorStauts", 
+  async (req, res) => {
+
+    try {
+      // Check for errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      // Extract info from the body
+      let {
+        coun_id,
+        coun_status
+       } = req.body;
+
+      // Check status
+      if (
+        coun_status !== "offline" &&
+        coun_status !== "free" &&
+        coun_status !== "busy"
+      ) {
+        return res.status(200).json({
+          "Code": 6,
+          "Message": "coun_status非法，请从offline/free/busy中选择"
+        });
+      }
+
+      try {
+        // Update coun_status in counsellor table
+        await promisePool.query(
+          `UPDATE counsellor SET coun_status='${coun_status}'
+                    WHERE coun_id=${coun_id}`
+        );
+
+        return res.status(200).json({
+          "Code": 0,
+          "Message": "成功"
+        });
+      } catch (err) {
+        // Catch errors
+        throw err;
+      }
+    } catch (err) {
+      // Catch errors
+      throw err;
+    }
+  }
+);
+
 // @route GET /wx-users/schedule/getCounsellorStatus
 // @desc  获取某咨询师状态
 // @access  Public
@@ -461,6 +516,48 @@ router.get(
         });
       }
     } catch (err) {
+      throw err;
+    }
+  }
+  );
+
+// @route   PUT /wx-users/addFeedbackScore
+// @desc    添加评分
+// @access  Public
+router.put(
+  "/addFeedbackScore", 
+  async (req, res) => {
+
+    try {
+      // Check for errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      // Extract info from the body
+      let {
+        visitor_id,
+        coun_id,
+        score,
+       } = req.body;
+
+      try {
+        // Update coun_status in counsellor table
+        await promisePool.query(
+          `INSERT INTO feedback(user_id, target_id, score) VALUES (${visitor_id}, ${coun_id}, ${score})`
+        );
+        return res.status(200).json({
+          "Code": 0,
+          "Message": "成功"
+        });
+      } catch (err) {
+        // Catch errors
+        throw err;
+      }
+    } catch (err) {
+      // Catch errors
       throw err;
     }
   }
