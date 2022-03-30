@@ -56,10 +56,8 @@ router.post(
         // User already exists
         return res.status(200).json(
           {
-            "data": {
-              "errCode": 2,
-              "errMessage": "用户名已存在！"
-            }
+            "errCode": 2,
+            "errMessage": "用户名已存在！"
           });
       } else {
         // Encrypt Password
@@ -330,10 +328,8 @@ router.put(
         visitor_gender !== "Other"
       ) {
         return res.status(200).json({
-          "data": {
-            "errCode": 3,
-            "errMessage": "性别非法（请填写Male/Female/Other）"
-          }
+          "errCode": 3,
+          "errMessage": "性别非法（请填写Male/Female/Other）"
         });
       }
 
