@@ -369,9 +369,9 @@ router.get(
     // Extract userEmail and password from the body
     const user_name = req.query.user_name;
 
-    // Use user_name select user_id
     const [rows] = await promisePool.query(
-      `SELECT record.record_id, record.coun_id, counsellor.coun_name, counsellor.coun_status, record.begin_time, record.end_time, record.period, feedback.score FROM record JOIN login JOIN counsellor JOIN feedback WHERE login.user_name = "${user_name}" AND record.visitor_id = login.user_id AND record.coun_id = counsellor.coun_id AND record.record_id = feedback.record_id AND record.visitor_id = feedback.user_id`
+      // `SELECT record.record_id, record.coun_id, counsellor.coun_name, counsellor.coun_status, record.begin_time, record.end_time, record.period, feedback.score FROM record JOIN login JOIN counsellor JOIN feedback WHERE login.user_name = "${user_name}" AND record.visitor_id = login.user_id AND record.coun_id = counsellor.coun_id AND record.record_id = feedback.record_id AND record.visitor_id = feedback.user_id`
+      `SELECT * FROM (SELECT record_id, visitor_id, coun_id, begin_time, period, Round(AVG(score),2) AS score FROM (SELECT record_id, visitor_id, coun_id, begin_time, period, score FROM feedback FULL JOIN record WHERE visitor_id = user_id AND target_id = coun_id GROUP BY record_id DESC) AS result WHERE visitor_id = (SELECT user_id FROM login where user_name = "${user_name}") GROUP BY coun_id) AS result2 JOIN counsellor GROUP BY record_id`
     );
 
     try {
@@ -406,7 +406,7 @@ router.get(
 
     // 
     const [rows] = await promisePool.query(
-      `SELECT counsellor.coun_name, counsellor.coun_avatar, counsellor.coun_status, round(avg(score),2) as coun_avg_score
+      `SELECT counsellor.coun_id, counsellor.coun_name, counsellor.coun_avatar, counsellor.coun_status, round(avg(score),2) as coun_avg_score
       FROM counsellor JOIN feedback
       ON counsellor.coun_id = feedback.target_id
       GROUP BY counsellor.coun_id`
