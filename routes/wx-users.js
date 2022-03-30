@@ -56,10 +56,8 @@ router.post(
         // User already exists
         return res.status(200).json(
           {
-            "data": {
-              "errCode": 2,
-              "errMessage": "用户名已存在！"
-            }
+            "errCode": 2,
+            "errMessage": "用户名已存在！"
           });
       } else {
         // Encrypt Password
@@ -101,10 +99,10 @@ router.post(
         // Send success message to the client
         return res.status(200).json(
           {
-            "data": {
-              "errCode": 0,
-              "errMessage": "成功"
-            }
+
+            "errCode": 0,
+            "errMessage": "成功"
+
           });
       }
     } catch (err) {
@@ -332,10 +330,8 @@ router.put(
         visitor_gender !== "Other"
       ) {
         return res.status(200).json({
-          "data": {
-            "errCode": 3,
-            "errMessage": "性别非法（请填写Male/Female/Other）"
-          }
+          "errCode": 3,
+          "errMessage": "性别非法（请填写Male/Female/Other）"
         });
       }
 
@@ -370,40 +366,30 @@ router.put(
 // @desc    获取访客咨询记录列表
 // @access  Public
 router.get(
-  "/record/getConsultList", 
+  "/record/getConsultList",
   async (req, res) => {
     // Extract userEmail and password from the body
     const user_name = req.query.user_name;
 
     // Use user_name select user_id
     const [rows] = await promisePool.query(
-<<<<<<< HEAD
-      `SELECT record.record_id, record.coun_id, counsellor.coun_name, record.begin_time, record.end_time, feedback.score
-      FROM record JOIN login JOIN counsellor JOIN feedback
-      WHERE login.user_name = "${user_name}" AND
-            record.visitor_id = login.user_id AND
-            record.coun_id = counsellor.coun_id AND
-            record.record_id = feedback.record_id AND
-            record.visitor_id = feedback.user_id`
-=======
       `SELECT record.record_id, record.coun_id, counsellor.coun_name, counsellor.coun_status, record.begin_time, record.end_time, feedback.score FROM record JOIN login JOIN counsellor JOIN feedback WHERE login.user_name = "${user_name}" AND record.visitor_id = login.user_id AND record.coun_id = counsellor.coun_id AND record.record_id = feedback.record_id AND record.visitor_id = feedback.user_id`
->>>>>>> Dev_zhq
     );
 
     try {
       // Check if record exists
       const result = rows[0];
-      if (result==undefined) {
+      if (result == undefined) {
         // Schedule already exists
         return res.status(200).json({
           "errCode": 4,
           "errMessage": "该用户暂无咨询记录"
         });
       } else {
-    //     // Send success message to the client
+        //     // Send success message to the client
         return res.status(200).json({
-            "code": 0,
-            "consultList": rows
+          "code": 0,
+          "consultList": rows
         });
       }
     } catch (err) {
@@ -417,7 +403,7 @@ router.get(
 // @desc    获取咨询师列表
 // @access  Public
 router.get(
-  "/getCounsellorList", 
+  "/getCounsellorList",
   async (req, res) => {
 
     // 
@@ -431,17 +417,17 @@ router.get(
     try {
       // Check if record exists
       const result = rows[0];
-      if (result==undefined) {
+      if (result == undefined) {
         // Schedule already exists
         return res.status(200).json({
           "errCode": 5,
           "errMessage": "当前无咨询师"
         });
       } else {
-    //     // Send success message to the client
+        //     // Send success message to the client
         return res.status(200).json({
-            "code": 0,
-            "counsellorList": rows
+          "code": 0,
+          "counsellorList": rows
         });
       }
     } catch (err) {
