@@ -369,9 +369,9 @@ router.get(
     // Extract userEmail and password from the body
     const user_name = req.query.user_name;
 
-    // Use user_name select user_id
     const [rows] = await promisePool.query(
-      `SELECT record.record_id, record.coun_id, counsellor.coun_name, counsellor.coun_status, record.begin_time, record.end_time, record.period, feedback.score FROM record JOIN login JOIN counsellor JOIN feedback WHERE login.user_name = "${user_name}" AND record.visitor_id = login.user_id AND record.coun_id = counsellor.coun_id AND record.record_id = feedback.record_id AND record.visitor_id = feedback.user_id`
+      // `SELECT record.record_id, record.coun_id, counsellor.coun_name, counsellor.coun_status, record.begin_time, record.end_time, record.period, feedback.score FROM record JOIN login JOIN counsellor JOIN feedback WHERE login.user_name = "${user_name}" AND record.visitor_id = login.user_id AND record.coun_id = counsellor.coun_id AND record.record_id = feedback.record_id AND record.visitor_id = feedback.user_id`
+      `SELECT * FROM (SELECT record_id, visitor_id, coun_id, begin_time, period, Round(AVG(score),2) AS score FROM (SELECT record_id, visitor_id, coun_id, begin_time, period, score FROM feedback FULL JOIN record WHERE visitor_id = user_id AND target_id = coun_id GROUP BY record_id DESC) AS result WHERE visitor_id = (SELECT user_id FROM login where user_name = "${user_name}") GROUP BY coun_id) AS result2 JOIN counsellor GROUP BY record_id`
     );
 
     try {
@@ -406,7 +406,7 @@ router.get(
 
     // 
     const [rows] = await promisePool.query(
-      `SELECT counsellor.coun_name, counsellor.coun_avatar, counsellor.coun_status, round(avg(score),2) as coun_avg_score
+      `SELECT counsellor.coun_id, counsellor.coun_name, counsellor.coun_avatar, counsellor.coun_status, round(avg(score),2) as coun_avg_score
       FROM counsellor JOIN feedback
       ON counsellor.coun_id = feedback.target_id
       GROUP BY counsellor.coun_id`
@@ -435,5 +435,132 @@ router.get(
   }
 );
 
+// @route   PUT /wx-users/changeCounsellorStauts
+// @desc    修改咨询师状态
+// @access  Private
+router.put(
+  "/changeCounsellorStauts", 
+  async (req, res) => {
+
+    try {
+      // Check for errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      // Extract info from the body
+      let {
+        coun_id,
+        coun_status
+       } = req.body;
+
+      // Check status
+      if (
+        coun_status !== "offline" &&
+        coun_status !== "free" &&
+        coun_status !== "busy"
+      ) {
+        return res.status(200).json({
+          "Code": 6,
+          "Message": "coun_status非法，请从offline/free/busy中选择"
+        });
+      }
+
+      try {
+        // Update coun_status in counsellor table
+        await promisePool.query(
+          `UPDATE counsellor SET coun_status='${coun_status}'
+                    WHERE coun_id=${coun_id}`
+        );
+
+        return res.status(200).json({
+          "Code": 0,
+          "Message": "成功"
+        });
+      } catch (err) {
+        // Catch errors
+        throw err;
+      }
+    } catch (err) {
+      // Catch errors
+      throw err;
+    }
+  }
+);
+
+// @route GET /wx-users/schedule/getCounsellorStatus
+// @desc  获取某咨询师状态
+// @access  Public
+router.get(
+  "/schedule/getCounsellorStatus",
+  async (req, res) => {
+    const coun_id = req.query.coun_id;
+
+    try {
+      const [rows] = await promisePool.query(
+        `SELECT coun_status FROM counsellor WHERE coun_id = ${coun_id}`
+      );
+      const row = rows[0];
+
+      if (row == undefined) {
+        return res.status(200).json({
+          "errCode": 9,
+          "errMessage": "该咨询师不存在"
+        });
+      } else {
+        return res.status(200).json({
+          "code": 0,
+          "coun_status": row.coun_status
+        });
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
+  );
+
+// @route   PUT /wx-users/addFeedbackScore
+// @desc    添加评分
+// @access  Public
+router.put(
+  "/addFeedbackScore", 
+  async (req, res) => {
+
+    try {
+      // Check for errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      // Extract info from the body
+      let {
+        visitor_id,
+        coun_id,
+        score,
+       } = req.body;
+
+      try {
+        // Update coun_status in counsellor table
+        await promisePool.query(
+          `INSERT INTO feedback(user_id, target_id, score) VALUES (${visitor_id}, ${coun_id}, ${score})`
+        );
+        return res.status(200).json({
+          "Code": 0,
+          "Message": "成功"
+        });
+      } catch (err) {
+        // Catch errors
+        throw err;
+      }
+    } catch (err) {
+      // Catch errors
+      throw err;
+    }
+  }
+);
 
 module.exports = router;
