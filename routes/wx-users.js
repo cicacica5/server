@@ -364,7 +364,7 @@ router.put(
 // @desc    获取访客咨询记录列表
 // @access  Public
 router.get(
-  "/record/getConsultList",
+  "/record/getConsultList", 
   async (req, res) => {
     // Extract userEmail and password from the body
     const user_name = req.query.user_name;
@@ -384,10 +384,10 @@ router.get(
           "errMessage": "该用户暂无咨询记录"
         });
       } else {
-        //     // Send success message to the client
+    //     // Send success message to the client
         return res.status(200).json({
-          "code": 0,
-          "consultList": rows
+            "code": 0,
+            "consultList": rows
         });
       }
     } catch (err) {
@@ -401,7 +401,7 @@ router.get(
 // @desc    获取咨询师列表
 // @access  Public
 router.get(
-  "/record/getConsultList",
+  "/getCounsellorList", 
   async (req, res) => {
 
     // 
@@ -422,10 +422,10 @@ router.get(
           "errMessage": "当前无咨询师"
         });
       } else {
-        //     // Send success message to the client
+    //     // Send success message to the client
         return res.status(200).json({
-          "code": 0,
-          "counsellorList": rows
+            "code": 0,
+            "counsellorList": rows
         });
       }
     } catch (err) {
