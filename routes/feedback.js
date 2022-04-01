@@ -35,7 +35,7 @@ router.post("/toVisitor", auth, async(req, res) => {
         if (role === "counsellor") {
             // Insert feedback in DB
             await promisePool.query(
-                `INSERT INTO feedback (user_id, feed_desc) VALUES (${user_id}, "${req.body.desc}")`
+                `INSERT INTO feedback(user_id, target_id, score) VALUES (${coun_id}, ${visitor_id}, ${score})`
             );
 
             // Send success message to the client
@@ -70,7 +70,7 @@ router.post("/wx/toCounsellor", auth, async(req, res) => {
         if (role === "visitor") {
             // Insert feedback in DB
             await promisePool.query(
-                `INSERT INTO feedback (user_id, feed_desc) VALUES (${user_id}, "${req.body.desc}")`
+                `INSERT INTO feedback(user_id, target_id, score) VALUES (${visitor_id}, ${coun_id}, ${score})`
             );
 
             // Send success message to the client
