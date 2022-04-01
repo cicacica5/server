@@ -14,6 +14,14 @@ const router = express.Router();
 // Endpoints
 /**
  * 注册访客
+ * 获取当前访客信息
+ * 授权用户登录
+ * 修改访客信息
+ * 获取访客咨询记录列表
+ * 获取咨询师列表
+ * 修改咨询师状态
+ * 获取某咨询师状态
+ * 添加评分
  */
 
 // @route   POST /wx-users/register
@@ -300,7 +308,7 @@ router.put(
         visitor_phone,
         visitor_avatar, // 头像url
         emergency_name, // 紧急联系人
-        emergency_phone,// 紧急联系人电话                
+        emergency_phone,// 紧急联系人电话
       };
 
       // Check gender
@@ -364,7 +372,7 @@ router.put(
 // @desc    获取访客咨询记录列表
 // @access  Public
 router.get(
-  "/record/getConsultList", 
+  "/record/getConsultList",
   async (req, res) => {
     // Extract userEmail and password from the body
     const user_name = req.query.user_name;
@@ -401,10 +409,10 @@ router.get(
 // @desc    获取咨询师列表
 // @access  Public
 router.get(
-  "/getCounsellorList", 
+  "/getCounsellorList",
   async (req, res) => {
 
-    // 
+    //
     const [rows] = await promisePool.query(
       `SELECT counsellor.coun_id, counsellor.coun_name, counsellor.coun_avatar, counsellor.coun_status, round(avg(score),2) as coun_avg_score
       FROM counsellor JOIN feedback
@@ -439,7 +447,7 @@ router.get(
 // @desc    修改咨询师状态
 // @access  Private
 router.put(
-  "/changeCounsellorStauts", 
+  "/changeCounsellorStauts",
   async (req, res) => {
 
     try {
@@ -525,7 +533,7 @@ router.get(
 // @desc    添加评分
 // @access  Public
 router.put(
-  "/addFeedbackScore", 
+  "/addFeedbackScore",
   async (req, res) => {
 
     try {
