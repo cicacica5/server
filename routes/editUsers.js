@@ -20,7 +20,7 @@ const router = express.Router();
 // @access  Private
 router.put(
     "/admin", [
-        auth,
+        //auth,
         check("user_name", "user_name is required").notEmpty(), // Check the user_name
         check(
             "user_password",
@@ -71,12 +71,12 @@ router.put(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_id = ${user_id}) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id = '${user_id}') "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
             if (!result) {
-                // User already exists
+                // User doesn't exist
                 return res.status(400).json({ msg: "User doesn't exist" });
             } else {
                 // Encrypt Password
