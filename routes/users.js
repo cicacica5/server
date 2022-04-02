@@ -132,6 +132,7 @@ router.post(
       check("coun_name", "coun_name is required").notEmpty(), // Check the coun_name
       check("coun_gender", "Gender is required").notEmpty(), // Check the gender
       check("coun_phone", "Phone is required").notEmpty(), // Check the phone
+      check("sup_id", "sup_id is required").notEmpty(), // Check the sup_id
     ],
     async(req, res) => {
       // Check for errors
@@ -149,6 +150,7 @@ router.post(
         coun_name,
         coun_gender,
         coun_phone,
+        sup_id,
       } = req.body;
 
       // Check role
@@ -202,7 +204,7 @@ router.post(
 
           // Add counsellor details in the DB
           await promisePool.query(
-              `INSERT INTO counsellor (coun_id, coun_name, coun_gender, coun_phone, coun_status) VALUES (${user_id},"${coun_name}", "${coun_gender}", "${coun_phone}", "offline")`
+              `INSERT INTO counsellor (coun_id, coun_name, coun_gender, coun_phone, coun_status, bind_sup) VALUES (${user_id},"${coun_name}", "${coun_gender}", "${coun_phone}", "offline", "${sup_id}")`
           );
 
           // Create a token
