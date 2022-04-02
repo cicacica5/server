@@ -65,77 +65,97 @@ router.get("/counsellorList", [
 // @route   GET /admin/supervisorList
 // @desc    获取督导列表
 // @access  Private
-router.get("/supervisorList", //auth,
+router.get("/supervisorList", [
+        //auth,
+        check("user_id", "user_id is required").notEmpty(), // Check the user_id
+    ],
     async(req, res) => {
-    // Extract user id from req
-    const user_id = req.user_id;
 
-    try {
-        // Get role of the user from DB
-        const [rows] = await promisePool.query(
-            `SELECT role from login WHERE user_id='${user_id}'`
-        );
+        try {
+            // Check for errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                // Return the errors
+                return res.status(400).json({ errors: errors.array() });
+            }
 
-        // Extract role from rows
-        const { role } = rows[0];
+            // Extract info from the body
+            let {
+                user_id,
+            } = req.body;
 
-        // Check if the user is admin
-        if (role === "admin") {
-            // Get all students from the DB
-            const [rows] = await promisePool.query(`SELECT * from supervisor`);
+            // Check if user exists
+            const [rows] = await promisePool.query(
+                `SELECT role from login WHERE user_id = '${user_id}'`
+            );
 
-            // Init supervisors array
-            let supervisors = [];
+            // Extract role from rows
+            const role = rows[0].role;
 
-            // Send data to the client
-            res.json(supervisors);
+            if (role == "admin") { // Check if the user is admin
+                // Get all students from the DB
+                const [supervisors] = await promisePool.query(`SELECT * from supervisor`);
 
-        } else {
-            // Unauthorized
-            res.status(401).json({ msg: "仅限管理员访问！！" });
+                // Send data to the client
+                res.json(supervisors);
+
+            } else {
+                // Unauthorized
+                res.status(401).json({ msg: "仅限管理员访问！！" });
+            }
+
+        } catch (err) {
+            // Catch errors
+            throw err;
         }
-    } catch (err) {
-        // Catch errors
-        throw err;
-    }
-});
+    });
 
 // @route   GET /admin/visitorList
 // @desc    获取访客列表
 // @access  Private
-router.get("/visitorList", //auth,
+router.get("/visitorList", [
+        //auth,
+        check("user_id", "user_id is required").notEmpty(), // Check the user_id
+    ],
     async(req, res) => {
-    // Extract user id from req
-    const user_id = req.user_id;
 
-    try {
-        // Get role of the user from DB
-        const [rows] = await promisePool.query(
-            `SELECT role from login WHERE user_id='${user_id}'`
-        );
+        try {
+            // Check for errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                // Return the errors
+                return res.status(400).json({ errors: errors.array() });
+            }
 
-        // Extract role from rows
-        const { role } = rows[0];
+            // Extract info from the body
+            let {
+                user_id,
+            } = req.body;
 
-        // Check if the user is admin
-        if (role === "admin") {
-            // Get all students from the DB
-            const [rows] = await promisePool.query(`SELECT * from visitor`);
+            // Check if user exists
+            const [rows] = await promisePool.query(
+                `SELECT role from login WHERE user_id = '${user_id}'`
+            );
 
-            // Init visitors array
-            let visitors = [];
+            // Extract role from rows
+            const role = rows[0].role;
 
-            // Send data to the client
-            res.json(visitors);
+            if (role == "admin") { // Check if the user is admin
+                // Get all students from the DB
+                const [visitors] = await promisePool.query(`SELECT * from visitor`);
 
-        } else {
-            // Unauthorized
-            res.status(401).json({ msg: "仅限管理员访问！！" });
+                // Send data to the client
+                res.json(visitors);
+
+            } else {
+                // Unauthorized
+                res.status(401).json({ msg: "仅限管理员访问！！" });
+            }
+
+        } catch (err) {
+            // Catch errors
+            throw err;
         }
-    } catch (err) {
-        // Catch errors
-        throw err;
-    }
-});
+    });
 
 module.exports = router;
