@@ -18,37 +18,44 @@ const router = express.Router();
 // @route   POST /feedback/toVisitor
 // @desc    咨询师评价访客
 // @access  Private
-router.post("/toVisitor", auth, async(req, res) => {
-    // Extract user id from req
-    const user_id = req.user_id;
+router.post(
+    "/toVisitor",
+    async (req, res) => {
 
-    try {
-        // Get role of the user from DB
-        const [rows] = await promisePool.query(
-            `SELECT role from login WHERE user_id='${user_id}'`
-        );
+        try {
+            // Check for errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                // Return the errors
+                return res.status(400).json({ errors: errors.array() });
+            }
 
-        // Extract role from rows
-        const { role } = rows[0];
+            // Extract info from the body
+            let {
+                coun_id,
+                visitor_id,
+                score,
+            } = req.body;
 
-        // Check if the user is counsellor
-        if (role === "counsellor") {
-            // Insert feedback in DB
-            await promisePool.query(
-                `INSERT INTO feedback(user_id, target_id, score) VALUES (${coun_id}, ${visitor_id}, ${score})`
-            );
-
-            // Send success message to the client
-            res.send("Submitted Successfully");
-        } else {
-            // Unauthorized
-            res.status(401).json({ msg: "仅限咨询师访问！！" });
+            try {
+                // Update coun_status in counsellor table
+                await promisePool.query(
+                    `INSERT INTO feedback(user_id, target_id, score) VALUES (${coun_id}, ${visitor_id}, ${score})`
+                );
+                return res.status(200).json({
+                    "Code": 0,
+                    "Message": "成功"
+                });
+            } catch (err) {
+                // Catch errors
+                throw err;
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
         }
-    } catch (err) {
-        // Catch errors
-        throw err;
     }
-});
+);
 
 // @route   POST /feedback/wx/toCounsellor
 // @desc    访客评价咨询师
