@@ -2,6 +2,7 @@
 const express = require("express"); // Create router
 const auth = require("../middleware/auth"); // Middleware
 const promisePool = require("../config/db"); // Import instance of mysql pool
+const { check, validationResult } = require("express-validator"); // Check and validate the inputs
 
 // Init router
 const router = express.Router();
@@ -16,34 +17,45 @@ const router = express.Router();
 // @route   GET /admin/counsellorList
 // @desc    获取咨询师列表
 // @access  Private
-router.get("/counsellorList", auth, async(req, res) => {
-    // Extract user id from req
-    const user_id = req.user_id;
+router.get("/counsellorList", [
+        //auth,
+        check("user_id", "user_id is required").notEmpty(), // Check the user_id
+    ],
+    async(req, res) => {
 
     try {
-        // Get role of the user from DB
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        // Extract info from the body
+        let {
+            user_id,
+        } = req.body;
+
+        // Check if user exists
         const [rows] = await promisePool.query(
-            `SELECT role from login WHERE user_id='${user_id}'`
+            `SELECT role from login WHERE user_id = '${user_id}'`
         );
 
-        // Extract role from rows
-        const { role } = rows[0];
+            // Extract role from rows
+            const role = rows[0].role;
 
-        // Check if the user is admin
-        if (role === "admin") {
-            // Get all students from the DB
-            const [rows] = await promisePool.query(`SELECT * from counsellor`);
+            if (role == "admin") { // Check if the user is admin
+                // Get all students from the DB
+                const [counsellors] = await promisePool.query(`SELECT * from counsellor`);
 
-            // Init counsellors array
-            let counsellors = [];
+                // Send data to the client
+                res.json(counsellors);
 
-            // Send data to the client
-            res.json(counsellors);
+            } else {
+                // Unauthorized
+                res.status(401).json({ msg: "仅限管理员访问！！" });
+            }
 
-        } else {
-            // Unauthorized
-            res.status(401).json({ msg: "仅限管理员访问！！" });
-        }
     } catch (err) {
         // Catch errors
         throw err;
@@ -53,7 +65,8 @@ router.get("/counsellorList", auth, async(req, res) => {
 // @route   GET /admin/supervisorList
 // @desc    获取督导列表
 // @access  Private
-router.get("/supervisorList", auth, async(req, res) => {
+router.get("/supervisorList", //auth,
+    async(req, res) => {
     // Extract user id from req
     const user_id = req.user_id;
 
@@ -90,7 +103,8 @@ router.get("/supervisorList", auth, async(req, res) => {
 // @route   GET /admin/visitorList
 // @desc    获取访客列表
 // @access  Private
-router.get("/visitorList", auth, async(req, res) => {
+router.get("/visitorList", //auth,
+    async(req, res) => {
     // Extract user id from req
     const user_id = req.user_id;
 
