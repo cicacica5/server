@@ -50,7 +50,7 @@ router.put(
                 // Update coun_status in counsellor table
                 await promisePool.query(
                     `UPDATE supervisor SET sup_status='${sup_status}'
-                    WHERE sup_id=${sup_id}`
+                    WHERE sup_id="${sup_id}"`
                 );
 
                 return res.status(200).json({
@@ -74,11 +74,13 @@ router.put(
 router.get(
     "/getStatus",
     async (req, res) => {
-        const sup_id = req.query.sup_id;
+        let {
+            sup_id,
+        } = req.body;
 
         try {
             const [rows] = await promisePool.query(
-                `SELECT sup_status FROM supervisor WHERE sup_id = ${sup_id}`
+                `SELECT sup_status FROM supervisor WHERE sup_id = '${sup_id}'`
             );
             const row = rows[0];
 
@@ -89,7 +91,6 @@ router.get(
                 });
             } else {
                 return res.status(200).json({
-                    "code": 0,
                     "sup_status": row.sup_status
                 });
             }
