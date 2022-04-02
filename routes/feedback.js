@@ -12,7 +12,7 @@ const router = express.Router();
 /**
  * 咨询师评价访客
  * 访客评价咨询师
- * 获取评价列表
+ * 获取咨询师的平均分
  */
 
 // @route   POST /feedback/toVisitor
@@ -92,13 +92,13 @@ router.post("/wx/toCounsellor", auth, async(req, res) => {
     }
 });
 
-// @route   GET /feedback/list
-// @desc    获取评价列表
+// @route   GET /feedback/score
+// @desc    获取咨询师的平均分
 // @access  Public
 
 router.get(
-    "/list", [
-        check("user_id", "userID is required").notEmpty(), // Check the userID
+    "/score", [
+        check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
     ],
     async(req, res) => {
         // Check for errors
@@ -110,13 +110,13 @@ router.get(
 
         // Extract info from the body
         let {
-            user_id,
+            coun_id,
         } = req.body;
 
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT * FROM feedback WHERE user_id = "${user_id}"`
+                `SELECT avg(score) FROM feedback WHERE target_id = "${coun_id}"`
             );
             const result = rows[0];
 
@@ -126,7 +126,7 @@ router.get(
             } else {
 
                 // Send success message to the client
-                res.send(rows);
+                res.send(rows[0]);
             }
         } catch (err) {
             // Catch errors
