@@ -9,7 +9,7 @@ const router = express.Router();
 // Endpoints
 /**
  * 创建咨询记录
- * 获取咨询记录列表
+ * 获取某个咨询师的咨询记录列表
  */
 
 // @route   POST /record
@@ -45,7 +45,7 @@ router.post(
                 if (!help_or_not) {
                     // Add record in the DB
                     await promisePool.query(
-                        `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", "${sup_id}", "${begin_time}", "${end_time}")`
+                        `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time, period) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", "${sup_id}", "${begin_time}", "${end_time}", timestampdiff(second, "${begin_time}", "${end_time}"))`
                     );
 
                     // Send success message to the client
@@ -53,7 +53,7 @@ router.post(
                 } else {
                     // Add record in the DB
                     await promisePool.query(
-                        `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", "${sup_id}", "${begin_time}", "${end_time}")`
+                        `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time, period) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", "${sup_id}", "${begin_time}", "${end_time}", timestampdiff(second, "${begin_time}", "${end_time}"))`
                     );
 
                     // Send success message to the client
@@ -67,12 +67,12 @@ router.post(
 );
 
 // @route   GET /record/list
-// @desc    获取咨询记录列表
+// @desc    获取某个咨询师的咨询记录列表
 // @access  Public
 
 router.get(
     "/list", [
-        check("user_id", "userID is required").notEmpty(), // Check the userID
+        check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
     ],
     async(req, res) => {
         // Check for errors
@@ -84,13 +84,13 @@ router.get(
 
         // Extract info from the body
         let {
-            user_id,
+            coun_id,
         } = req.body;
 
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT * FROM record WHERE user_id = "${user_id}"`
+                `SELECT * FROM record WHERE coun_id = "${coun_id}"`
             );
             const result = rows[0];
 
