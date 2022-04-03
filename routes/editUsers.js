@@ -13,6 +13,9 @@ const router = express.Router();
  * 修改管理员信息
  * 修改咨询师信息
  * 修改督导信息
+ * 删除管理员
+ * 删除咨询师
+ * 删除督导
  */
 
 // @route   PUT /editUsers/admin
