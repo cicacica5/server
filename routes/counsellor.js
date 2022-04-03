@@ -37,10 +37,10 @@ router.post(
             for (let i = 0; i < sups.length; i++) {
                 let sup_id = sups[i];
                 // Check if bind exists
-                const [rows] = await promisePool.query(
+                let [rows] = await promisePool.query(
                     `SELECT EXISTS(SELECT * from bind WHERE coun_id = "${coun_id}" and sup_id = "${sup_id}") "EXISTS" FROM dual`
                 );
-                const result = rows[0].EXISTS;
+                let result = rows[0].EXISTS;
 
                 if (result) {
                     // Bind already exists
