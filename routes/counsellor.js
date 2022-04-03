@@ -9,9 +9,58 @@ const router = express.Router();
 
 // Endpoints
 /**
+ * 绑定督导
  * 修改咨询师状态
  * 获取某个咨询师状态
  */
+
+// @route   POST /counsellor/bind
+// @desc    绑定督导
+// @access  Public
+
+router.post(
+    "/bind", [
+        check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        let coun_id = req.body.coun_id;
+        let sups = req.body.sup_id;
+
+        try {
+            for (let i = 0; i < sups.length; i++) {
+                let sup_id = sups[i];
+                // Check if bind exists
+                const [rows] = await promisePool.query(
+                    `SELECT EXISTS(SELECT * from bind WHERE coun_id = "${coun_id}" and sup_id = "${sup_id}") "EXISTS" FROM dual`
+                );
+                const result = rows[0].EXISTS;
+
+                if (result) {
+                    // Bind already exists
+                    return res.status(400).json({ msg: "Bind already exists" });
+                } else {
+
+                    // Add bind in the DB
+                    await promisePool.query(
+                        `INSERT INTO bind (coun_id, sup_id) VALUES ("${coun_id}", "${sup_id}")`
+                    );
+                }
+            }
+            // Send success message to the client
+            res.send("Bind created");
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
 
 // @route   PUT /counsellor/changeStatus
 // @desc    修改咨询师状态
