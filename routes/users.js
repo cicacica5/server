@@ -99,7 +99,7 @@ router.post(
 
           // Add admin details in the DB
           await promisePool.query(
-              `INSERT INTO admin (admin_id, admin_name, admin_gender, admin_phone) VALUES (${user_id},"${admin_name}", "${admin_gender}", "${admin_phone}")`
+              `INSERT INTO [admin] (admin_id, admin_name, admin_gender, admin_phone) VALUES (${user_id},"${admin_name}", "${admin_gender}", "${admin_phone}")`
           );
 
           // Create a token

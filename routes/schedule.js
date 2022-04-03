@@ -193,4 +193,59 @@ router.get(
     }
 );
 
+// @route   POST /schedule/dailyInBulk
+// @desc    批量排班
+// @access  Public
+router.post(
+    "/dailyInBulk", [
+        check("user_id", "user_id is required").notEmpty(), // Check the user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        let {
+            user_id,
+            date,
+        } = req.body;
+
+        try {
+            for (let i = 0; i < date.length; i++) {
+                let date_i = date[i];
+                // 这个isDate判定我本地跑不通，不知道为什么总之先注释掉了
+                // if(!date_i.isDate){
+                //     console.log("出问题的Date:"+datei);
+                //     return res.status(400).json({ msg: "Please enter valid Dates." });
+                // }
+                
+                // Check if schedule exists
+                let [rows] = await promisePool.query(
+                    `SELECT EXISTS(SELECT * from schedule WHERE user_id = "${user_id}" and date = "${date_i}") "EXISTS" FROM dual`
+                );
+                let result = rows[0].EXISTS;
+
+                if (result) {
+                    // Schedule already exists
+                    return res.status(400).json({ msg: "Schedule already exists" });
+                } else {
+
+                    // Add bind in the DB
+                    await promisePool.query(
+                        `INSERT INTO schedule (user_id, date) VALUES ("${user_id}", "${date_i}")`
+                    );
+                }
+            }
+            // Send success message to the client
+            res.send("Schedule created");
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
 module.exports = router;
