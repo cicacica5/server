@@ -86,10 +86,7 @@ router.get(
             return res.status(400).json({ errors: errors.array() });
         }
 
-        // Extract info from the body
-        let {
-            date,
-        } = req.body;
+        let date = req.query.date;
 
         try {
             // Check if date exists
@@ -132,10 +129,7 @@ router.get(
             return res.status(400).json({ errors: errors.array() });
         }
 
-        // Extract info from the body
-        let {
-            date,
-        } = req.body;
+        let date = req.query.date;
 
         try {
             // Check if date exists
@@ -175,10 +169,7 @@ router.get(
             return res.status(400).json({ errors: errors.array() });
         }
 
-        // Extract info from the body
-        let {
-            user_id,
-        } = req.body;
+        let user_id = req.query.user_id;
 
         try {
             // Check if date exists

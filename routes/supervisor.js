@@ -75,9 +75,7 @@ router.put(
 router.get(
     "/getStatus",
     async (req, res) => {
-        let {
-            sup_id,
-        } = req.body;
+        let sup_id = req.query.sup_id;
 
         try {
             const [rows] = await promisePool.query(
@@ -118,10 +116,7 @@ router.get("/bindCounsellorList", [
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            // Extract info from the body
-            let {
-                user_id,
-            } = req.body;
+            let user_id = req.query.user_id;
 
             // Check if user exists
             const [rows] = await promisePool.query(

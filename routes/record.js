@@ -82,10 +82,7 @@ router.get(
             return res.status(400).json({ errors: errors.array() });
         }
 
-        // Extract info from the body
-        let {
-            coun_id,
-        } = req.body;
+        let coun_id = req.query.coun_id;
 
         try {
             // Check if record exists

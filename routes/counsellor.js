@@ -74,9 +74,7 @@ router.put(
 router.get(
     "/getStatus",
     async (req, res) => {
-        let {
-            coun_id,
-        } = req.body;
+        let coun_id = req.query.coun_id;
 
         try {
             const [rows] = await promisePool.query(

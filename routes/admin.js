@@ -31,10 +31,7 @@ router.get("/counsellorList", [
             return res.status(400).json({ errors: errors.array() });
         }
 
-        // Extract info from the body
-        let {
-            user_id,
-        } = req.body;
+        let user_id = req.query.user_id;
 
         // Check if user exists
         const [rows] = await promisePool.query(
@@ -79,10 +76,7 @@ router.get("/supervisorList", [
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            // Extract info from the body
-            let {
-                user_id,
-            } = req.body;
+            let user_id = req.query.user_id;
 
             // Check if user exists
             const [rows] = await promisePool.query(
@@ -127,10 +121,7 @@ router.get("/visitorList", [
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            // Extract info from the body
-            let {
-                user_id,
-            } = req.body;
+            let user_id = req.query.user_id;
 
             // Check if user exists
             const [rows] = await promisePool.query(
