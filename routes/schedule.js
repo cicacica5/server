@@ -193,11 +193,11 @@ router.get(
     }
 );
 
-// @route   POST /schedule/dailyInBulk
+// @route   POST /schedule/dates
 // @desc    批量排班
 // @access  Public
 router.post(
-    "/dailyInBulk", [
+    "/dates", [
         check("user_id", "user_id is required").notEmpty(), // Check the user_id
     ],
     async(req, res) => {
@@ -248,11 +248,11 @@ router.post(
     }
 );
 
-// @route   DELETE /schedule/deleteDaily
+// @route   DELETE /schedule/daliy
 // @desc    删除某天排班
 // @access  Public
 router.delete(
-    "/deleteDaily", [
+    "/daliy", [
         check("user_id", "user_id is required").notEmpty(), // Check the user_id
         check(
             "date",
@@ -300,11 +300,11 @@ router.delete(
     }
 );
 
-// @route   POST /schedule/deleteDailyInBulk
+// @route   POST /schedule/dates
 // @desc    批量删除排班
 // @access  Public
 router.delete(
-    "/deleteDailyInBulk", [
+    "/dates", [
         check("user_id", "user_id is required").notEmpty(), // Check the user_id
     ],
     async(req, res) => {
