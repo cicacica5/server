@@ -47,11 +47,11 @@ router.get("/getInfo", //auth,
         if (role === "counsellor") {
             // Get counsellor details from the DB
             const [rows] = await promisePool.query(
-                `SELECT coun_name, coun_gender, coun_phone, coun_status, coun_avatar, bind_sup from counsellor WHERE coun_id='${user_id}'`
+                `SELECT coun_name, coun_gender, coun_phone, coun_status, coun_avatar from counsellor WHERE coun_id='${user_id}'`
             );
 
             // Extract the details in variables
-            const { coun_name, coun_gender, coun_phone, coun_status, coun_avatar, bind_sup } = rows[0];
+            const { coun_name, coun_gender, coun_phone, coun_status, coun_avatar} = rows[0];
 
             // Store the details in the user object
             user = {
@@ -60,8 +60,7 @@ router.get("/getInfo", //auth,
                 coun_gender,
                 coun_phone,
                 coun_status,
-                coun_avatar,
-                bind_sup
+                coun_avatar
             };
             // Send user object to the client
             res.json(user);
