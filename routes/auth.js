@@ -202,6 +202,13 @@ router.post(
                     const payload = {
                         id: user_id,
                     };
+                    // Check if user exists
+                    const [rows] = await promisePool.query(
+                        `SELECT role from login WHERE user_id = '${user_id}'`
+                    );
+
+                    // Extract role from rows
+                    const role = rows[0].role;
 
                     // Create a token
                     const token = jwt.sign(payload, config.get("jwtSecret"), { expiresIn: 21600, });
@@ -210,7 +217,7 @@ router.post(
                     res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV !== "development", maxAge: 6 * 60 * 60 * 1000 });
 
                     // Send success message to client
-                    res.send("Logged in");
+                    res.json({role:role});
                 }
             }
         } catch (err) {
