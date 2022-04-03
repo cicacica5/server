@@ -135,6 +135,7 @@ router.put(
                 coun_name,
                 coun_gender,
                 coun_phone,
+                bind_sup,
             } = req.body;
 
             // Create user object
@@ -145,6 +146,7 @@ router.put(
                 coun_name,
                 coun_gender,
                 coun_phone,
+                bind_sup,
             };
 
             // Check gender
@@ -177,7 +179,7 @@ router.put(
 
                 // Update details in counsellors table
                 await promisePool.query(
-                    `UPDATE counsellor SET coun_name='${coun_name}', coun_gender='${coun_gender}', coun_phone='${coun_phone}' WHERE coun_id=${user_id}`
+                    `UPDATE counsellor SET coun_name='${coun_name}', coun_gender='${coun_gender}', coun_phone='${coun_phone}', bind_sup='${bind_sup}' WHERE coun_id=${user_id}`
                 );
 
                 // Send updated details to the client
