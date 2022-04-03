@@ -19,21 +19,22 @@ const router = express.Router();
  * 验证用户
  */
 
-// @route   GET /auth
+// @route   GET /auth/getInfo
 // @desc    获取当前用户信息
 // @access  Private
-router.get("/", auth, async(req, res) => {
+router.get("/getInfo", //auth,
+    async(req, res) => {
     // Extract user id from req
-    const user_id = req.user_id;
+        let user_name = req.query.user_name;
 
     try {
-        // Get user_name and role from DB
+        // Get user_id from DB
         const [rows] = await promisePool.query(
-            `SELECT user_name, role from login WHERE user_id='${user_id}'`
+            `SELECT user_id, role from login WHERE user_name='${user_name}'`
         );
 
-        // Extract user_email and role from rows
-        const { user_name, role } = rows[0];
+        // Extract user_id and role from rows
+        const { user_id, role } = rows[0];
 
         // Create user object
         let user = {
@@ -46,11 +47,11 @@ router.get("/", auth, async(req, res) => {
         if (role === "counsellor") {
             // Get counsellor details from the DB
             const [rows] = await promisePool.query(
-                `SELECT coun_name, coun_gender, coun_phone, coun_status from counsellor WHERE coun_id='${user_id}'`
+                `SELECT coun_name, coun_gender, coun_phone, coun_status, coun_avatar, bind_sup from counsellor WHERE coun_id='${user_id}'`
             );
 
             // Extract the details in variables
-            const { coun_name, coun_gender, coun_phone, coun_status } = rows[0];
+            const { coun_name, coun_gender, coun_phone, coun_status, coun_avatar, bind_sup } = rows[0];
 
             // Store the details in the user object
             user = {
@@ -58,14 +59,16 @@ router.get("/", auth, async(req, res) => {
                 coun_name,
                 coun_gender,
                 coun_phone,
-                coun_status
+                coun_status,
+                coun_avatar,
+                bind_sup
             };
             // Send user object to the client
             res.json(user);
         } else if (role === "supervisor") {
             // Get supervisor details from the DB
             const [rows] = await promisePool.query(
-                `SELECT sup_name, sup_gender, sup_phone, sup_status from supervisor WHERE sup_id='${user_id}'`
+                `SELECT sup_name, sup_gender, sup_phone, sup_status, sup_avatar from supervisor WHERE sup_id='${user_id}'`
             );
 
             // Extract the details in variables
@@ -74,6 +77,7 @@ router.get("/", auth, async(req, res) => {
                 sup_gender,
                 sup_phone,
                 sup_status,
+                sup_avatar
             } = rows[0];
 
             // Store the details in the user object
@@ -83,6 +87,7 @@ router.get("/", auth, async(req, res) => {
                 sup_gender,
                 sup_phone,
                 sup_status,
+                sup_avatar
             };
 
             res.json(user);
@@ -111,14 +116,18 @@ router.get("/", auth, async(req, res) => {
         } else if (role === "visitor") {
             // Get visitor details from the DB
             const [rows] = await promisePool.query(
-                `SELECT visitor_name, visitor_gender, visitor_phone from visitor WHERE visitor_id='${user_id}'`
+                `SELECT visitor_name, visitor_gender, visitor_phone, visitor_status, visitor_avatar, emergency_name, emergency_phone from visitor WHERE visitor_id='${user_id}'`
             );
 
             // Extract the details in variables
             const {
                 visitor_name,
                 visitor_gender,
-                visitor_phone
+                visitor_phone,
+                visitor_status,
+                visitor_avatar,
+                emergency_name,
+                emergency_phone
             } = rows[0];
 
             // Store the details in the user object
@@ -126,7 +135,11 @@ router.get("/", auth, async(req, res) => {
                 ...user,
                 visitor_name,
                 visitor_gender,
-                visitor_phone
+                visitor_phone,
+                visitor_status,
+                visitor_avatar,
+                emergency_name,
+                emergency_phone
             };
             // Send user object to the client
             res.json(user);
