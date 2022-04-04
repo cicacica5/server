@@ -138,6 +138,12 @@ router.put(
                 coun_name,
                 coun_gender,
                 coun_phone,
+                coun_avatar,
+                coun_age,
+                coun_identity,
+                coun_email,
+                coun_company,
+                coun_title,
             } = req.body;
 
             // Create user object
@@ -148,6 +154,12 @@ router.put(
                 coun_name,
                 coun_gender,
                 coun_phone,
+                coun_avatar,
+                coun_age,
+                coun_identity,
+                coun_email,
+                coun_company,
+                coun_title,
             };
 
             // Check gender
@@ -161,7 +173,7 @@ router.put(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_name = "${user_name}" AND user_id=${user_id}) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id}) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -180,7 +192,16 @@ router.put(
 
                 // Update details in counsellors table
                 await promisePool.query(
-                    `UPDATE counsellor SET coun_name='${coun_name}', coun_gender='${coun_gender}', coun_phone='${coun_phone}' WHERE coun_id=${user_id}`
+                    `UPDATE counsellor SET coun_name='${coun_name}',
+                                           coun_gender='${coun_gender}',
+                                           coun_phone='${coun_phone}',
+                                           coun_avatar='${coun_avatar}',
+                                           coun_age=${coun_age},
+                                           coun_identity='${coun_identity}',
+                                           coun_email='${coun_email}',
+                                           coun_company='${coun_company}',
+                                           coun_title='${coun_title}'
+                     WHERE coun_id=${user_id}`
                 );
 
                 // Send updated details to the client
@@ -226,6 +247,14 @@ router.put(
                 sup_name,
                 sup_gender,
                 sup_phone,
+                sup_avatar,
+                sup_age,
+                sup_identity,
+                sup_email,
+                sup_company,
+                sup_title,
+                sup_qualification,
+                sup_quaNumber,
             } = req.body;
 
             // Create user object
@@ -236,6 +265,14 @@ router.put(
                 sup_name,
                 sup_gender,
                 sup_phone,
+                sup_avatar,
+                sup_age,
+                sup_identity,
+                sup_email,
+                sup_company,
+                sup_title,
+                sup_qualification,
+                sup_quaNumber,
             };
 
             // Check gender
@@ -249,7 +286,7 @@ router.put(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_name = "${user_name}" AND user_id=${user_id} ) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id} ) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -269,7 +306,18 @@ router.put(
 
                     // Update details in students table
                     await promisePool.query(
-                        `UPDATE supervisor SET sup_name='${sup_name}', sup_gender='${sup_gender}', sup_phone='${sup_phone}' WHERE sup_id=${user_id}`
+                        `UPDATE supervisor SET sup_name='${sup_name}', 
+                                               sup_gender='${sup_gender}',
+                                               sup_phone='${sup_phone}'
+                                               sup_avatar='${sup_avatar}',
+                                               sup_age=${sup_age},
+                                               sup_identity='${sup_identity}',
+                                               sup_email='${sup_email}',
+                                               sup_company='${sup_company}',
+                                               sup_title='${sup_title}',
+                                               sup_qualification='${sup_qualification}',
+                                               sup_quaNumber='${sup_quaNumber}'
+                        WHERE sup_id=${user_id}`
                     );
 
                     // Send updated details to the client
