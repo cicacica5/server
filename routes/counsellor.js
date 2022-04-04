@@ -12,6 +12,7 @@ const router = express.Router();
  * 绑定督导
  * 修改咨询师状态
  * 获取某个咨询师状态
+ * 获取绑定的督导列表
  */
 
 // @route   POST /counsellor/bind
@@ -146,5 +147,50 @@ router.get(
         }
     }
 );
+
+// @route   GET /counsellor/bindSupervisorList
+// @desc    获取绑定的督导列表
+// @access  Private
+router.get("/bindSupervisorList", [
+        //auth,
+        check("user_id", "user_id is required").notEmpty(), // Check the user_id
+    ],
+    async(req, res) => {
+
+        try {
+            // Check for errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                // Return the errors
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            let user_id = req.query.user_id;
+
+            // Check if user exists
+            const [rows] = await promisePool.query(
+                `SELECT role from login WHERE user_id = '${user_id}'`
+            );
+
+            // Extract role from rows
+            const role = rows[0].role;
+
+            if (role == "counsellor") { // Check if the user is supervisor
+                // Get all students from the DB
+                const [supervisors] = await promisePool.query(`SELECT sup_name FROM supervisor INNER JOIN bind ON supervisor.sup_id = bind.sup_id WHERE coun_id = "${user_id}"`);
+
+                // Send data to the client
+                res.json(supervisors);
+
+            } else {
+                // Unauthorized
+                res.status(401).json({ msg: "仅限咨询师访问！！" });
+            }
+
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    });
 
 module.exports = router;
