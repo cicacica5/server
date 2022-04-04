@@ -255,6 +255,17 @@ router.post(
           // Password doesn't match
           return res.status(200).json({ errCode: 8, errMessage: "用户名或密码错误。" });
         } else {
+          // Check if visitor is banned.
+          const [row] = await promisePool.query(
+            `SELECT visitor_status from visitor WHERE visitor_id='${user_id}'`
+          );
+          const status = row[0].visitor_status;
+          console.log(status);
+          if(status == "banned"){
+            console.log("用户已被禁用");
+            return res.status(200).json({ errCode: 15, errMessage: "用户已被禁用。" });
+          }
+
           // Store user_id in payload for token
           const payload = {
             id: user_id,
