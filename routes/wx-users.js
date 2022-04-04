@@ -29,12 +29,11 @@ const router = express.Router();
 // @access  Public
 router.post(
   "/register", [
-  check("user_name", "username is required").notEmpty(), // Check the username
+  check("user_name", "Username length is 2-32").isLength({max:32, min:2}), // Check the username
   check(
     "user_password",
     "Please enter a password with 6 or more characters"
   ).isLength({ min: 6 }), // Check the password
-  check("visitor_phone", "Phone is required").notEmpty(), // Check the phone
   check("visitor_phone",
     "Please enter phone number with 11 nums.").isLength(11), // Check the phone
 ],
@@ -52,6 +51,26 @@ router.post(
       user_password,
       visitor_phone,
     } = req.body;
+
+    // Check user_name
+    var reg_userN = /^[a-zA-Z_]+$/;
+    if(!reg_userN.test(user_name)){
+      return res.status(200).json(
+        {
+          "errCode": 10,
+          "errMessage": "用户名非法（只允许包含字母及下划线）"
+      });
+    }
+
+    // Check phone
+    var reg_ph = /^1[0-9]{10}/;
+    if(!reg_ph.test(visitor_phone)){
+      return res.status(200).json(
+        {
+          "errCode": 11,
+          "errMessage": "手机号非法"
+      });
+    }
 
     try {
       // Check if user exists
@@ -264,10 +283,8 @@ router.post(
 // @access  Private
 router.put(
   "/editInfo", [
-  //auth,
   check("user_name", "user_name is required").notEmpty(), // Check the user_name
   check("visitor_name", "visitor_name is required").notEmpty(), // Check the visitor_name
-  check("visitor_phone", "Phone is required").notEmpty(), // Check the phone
   check("visitor_phone",
     "Please enter phone number with 11 nums.").isLength(11), // Check the phone
 
@@ -326,19 +343,23 @@ router.put(
         });
       }
 
-      // Check gender
-      // gender == null
-      if (!visitor_gender) {
-        visitor_gender = "Other";
-      } else if (
-        visitor_gender !== "Male" &&
-        visitor_gender !== "Female" &&
-        visitor_gender !== "Other"
-      ) {
-        return res.status(200).json({
-          "errCode": 3,
-          "errMessage": "性别非法（请填写Male/Female/Other）"
+      // Check phone
+      var reg_ph = /^1[0-9]{10}/;
+      if(!reg_ph.test(visitor_phone)){
+        return res.status(200).json(
+          {
+            "errCode": 11,
+            "errMessage": "手机号非法"
         });
+      }
+
+      // Check visitor_name
+      var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name.test(visitor_name)){
+            return res.status(200).json({
+              "errCode": 12,
+              "errMessage": "visitor_name非法"
+            });
       }
 
       try {
