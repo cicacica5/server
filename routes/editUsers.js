@@ -219,7 +219,6 @@ router.put(
 // @access  Private
 router.put(
     "/supervisor", [
-        //auth,
         check("user_name", "user_name is required").notEmpty(), // Check the user_name
         check(
             "user_password",
@@ -357,7 +356,7 @@ router.delete(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_id<>${user_id} ) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id} ) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -367,18 +366,13 @@ router.delete(
             } else {
                 // Check role
                 if ( role !== "admin") {
-                    return res.status(400).json({ msg: "No authority! Only admin can delete users." });
+                    return res.status(401).json({ msg: "No authority! Only admin can delete users." });
                 }
 
                 try {
                     // Delete user in logins table
                     await promisePool.query(
                         `DELETE FROM login WHERE user_id=${user_id}`
-                    );
-
-                    // Delete user in admin table
-                    await promisePool.query(
-                        `DELETE FROM admin WHERE admin_id=${user_id}`
                     );
                     
                     return res.status(200).json({ msg: "成功"});
@@ -416,7 +410,7 @@ router.delete(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_id<>${user_id} ) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id} ) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -426,7 +420,7 @@ router.delete(
             } else {
                 // Check role
                 if ( role !== "admin") {
-                    return res.status(400).json({ msg: "No authority! Only admin can delete users." });
+                    return res.status(401).json({ msg: "No authority! Only admin can delete users." });
                 }
 
                 try {
@@ -435,10 +429,6 @@ router.delete(
                         `DELETE FROM login WHERE user_id=${user_id}`
                     );
 
-                    // Delete user in admin table
-                    await promisePool.query(
-                        `DELETE FROM counsellor WHERE coun_id=${user_id}`
-                    );
                     return res.status(200).json({ msg: "成功"});
                 } catch (err) {
                     // Catch errors
@@ -474,7 +464,7 @@ router.delete(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_id<>${user_id} ) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id} ) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -484,7 +474,7 @@ router.delete(
             } else {
                 // Check role
                 if ( role !== "admin") {
-                    return res.status(400).json({ msg: "No authority! Only admin can delete users." });
+                    return res.status(401).json({ msg: "No authority! Only admin can delete users." });
                 }
 
                 try {
@@ -493,10 +483,6 @@ router.delete(
                         `DELETE FROM login WHERE user_id=${user_id}`
                     );
 
-                    // Delete user in admin table
-                    await promisePool.query(
-                        `DELETE FROM supervisor WHERE sup_id=${user_id}`
-                    );
                     return res.status(200).json({ msg: "成功"});
                 } catch (err) {
                     // Catch errors
