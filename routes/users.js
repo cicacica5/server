@@ -63,6 +63,18 @@ router.post(
         return res.status(400).json({ msg: "Gender is not valid" });
       }
 
+      // Check admin_name
+      var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name.test(admin_name)){
+        return res.status(400).json({ msg: "Please enter vaild admin_Name."});
+      }
+      // Check user_name
+      var reg_userN = /^[a-zA-Z_]+$/;
+      if(!reg_userN.test(user_name)){
+        return res.status(400).json({ msg: "Please enter vaild user_Name."});
+      }
+
+
       try {
         // Check if user exists
         const [rows] = await promisePool.query(
@@ -185,6 +197,17 @@ router.post(
       var reg_ph = /^1[0-9]{10}/;
       if(!reg_ph.test(coun_phone)){
           return res.status(400).json({ msg: "PhoneNumber is not valid." });
+      }
+
+      // Check counsellor_name
+      var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name.test(coun_name)){
+        return res.status(400).json({ msg: "Please enter vaild coun_Name."});
+      }
+      // Check user_name
+      var reg_userN = /^[a-zA-Z_]+$/;
+      if(!reg_userN.test(user_name)){
+        return res.status(400).json({ msg: "Please enter vaild user_Name."});
       }
 
       try {
@@ -314,6 +337,17 @@ router.post(
       if(!reg_ph.test(sup_phone)){
         return res.status(400).json({ msg: "PhoneNumber is not valid." });
       }
+
+      // Check sup_name
+      var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name.test(sup_name)){
+        return res.status(400).json({ msg: "Please enter vaild sup_Name."});
+      }
+      // Check user_name
+      var reg_userN = /^[a-zA-Z_]+$/;
+      if(!reg_userN.test(user_name)){
+        return res.status(400).json({ msg: "Please enter vaild user_Name."});
+      }      
 
       try {
         // Check if user exists

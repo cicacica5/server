@@ -72,6 +72,12 @@ router.put(
                 return res.status(400).json({ msg: "Gender is not valid" });
             }
 
+              // Check admin_name
+            var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+            if(!reg_name.test(admin_name)){
+                return res.status(400).json({ msg: "Please enter vaild admin_Name."});
+            }
+
             // Check if user exists
             const [rows] = await promisePool.query(
                 `SELECT EXISTS(SELECT * from login WHERE user_id = '${user_id}') "EXISTS" FROM DUAL`
@@ -185,6 +191,12 @@ router.put(
             var reg_ph = /^1[0-9]{10}/;
             if(!reg_ph.test(coun_phone)){
                 return res.status(400).json({ msg: "PhoneNumber is not valid." });
+            }
+
+            // Check coun_name
+            var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+            if(!reg_name.test(coun_name)){
+                return res.status(400).json({ msg: "Please enter vaild admin_Name."});
             }
 
             // Check if user exists
@@ -316,6 +328,12 @@ router.put(
             var reg_ph = /^1[0-9]{10}/;
             if(!reg_ph.test(sup_phone)){
                 return res.status(400).json({ msg: "PhoneNumber is not valid." });
+            }
+
+            // Check sup_name
+            var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+            if(!reg_name.test(sup_name)){
+                return res.status(400).json({ msg: "Please enter vaild admin_Name."});
             }
 
             // Check if user exists
