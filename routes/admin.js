@@ -168,7 +168,7 @@ router.get("/visitorList", [
 
             if (role == "admin") { // Check if the user is admin
                 // Get all students from the DB
-                const [visitors] = await promisePool.query(`SELECT * from visitor`);
+                const [visitors] = await promisePool.query(`SELECT * FROM visitor`);
 
                 // Send data to the client
                 res.json(visitors);
