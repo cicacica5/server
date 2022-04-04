@@ -143,7 +143,7 @@ router.post(
       check("role", "Role is required.").notEmpty(), // Check the role
       check("coun_name", "coun_name is required.").notEmpty(), // Check the coun_name
       check("coun_gender", "Gender is required.").notEmpty(), // Check the gender
-      check("sup_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
+      check("coun_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
       check("coun_age", "Age is an Integer.").isInt(), // Check the age
       check("coun_email", "Please enter correct email.").isEmail(), // Check the email
       check("coun_company", "Company is required.").notEmpty(), // check the company
