@@ -114,7 +114,7 @@ router.post(
 
         // Add student details in the DB
         await promisePool.query(
-          `INSERT INTO visitor (visitor_id, visitor_phone, visitor_status) VALUES (${user_id},"${visitor_phone}", "offline")`
+          `INSERT INTO visitor (visitor_id, visitor_phone, visitor_status) VALUES (${user_id},"${visitor_phone}", "normal")`
         );
 
         // Create a token
