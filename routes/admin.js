@@ -43,7 +43,8 @@ router.get("/counsellorList", [
 
             if (role == "admin") { // Check if the user is admin
                 // Get all students from the DB
-                const [counsellors] = await promisePool.query(`SELECT counsellor.coun_name,
+                const [counsellors] = await promisePool.query(`SELECT counsellor.coun_id,
+                                                                      counsellor.coun_name,
                                                                       counsellor.coun_gender,
                                                                       counsellor.coun_phone,
                                                                       counsellor.coun_age,
@@ -105,7 +106,8 @@ router.get("/supervisorList", [
 
             if (role == "admin") { // Check if the user is admin
                 // Get all students from the DB
-                const [supervisors] = await promisePool.query(`SELECT supervisor.sup_name,
+                const [supervisors] = await promisePool.query(`SELECT supervisor.sup_id,
+                                                                      supervisor.sup_name,
                                                                       supervisor.sup_gender,
                                                                       supervisor.sup_phone,
                                                                       supervisor.sup_age,
