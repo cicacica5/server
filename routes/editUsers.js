@@ -72,6 +72,12 @@ router.put(
                 return res.status(400).json({ msg: "Gender is not valid" });
             }
 
+              // Check admin_name
+            var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+            if(!reg_name.test(admin_name)){
+                return res.status(400).json({ msg: "Please enter vaild admin_Name."});
+            }
+
             // Check if user exists
             const [rows] = await promisePool.query(
                 `SELECT EXISTS(SELECT * from login WHERE user_id = '${user_id}') "EXISTS" FROM DUAL`
@@ -111,7 +117,6 @@ router.put(
 // @access  Private
 router.put(
     "/counsellor", [
-        //auth,
         check("user_name", "user_name is required").notEmpty(), // Check the user_name
         check(
             "user_password",
@@ -119,7 +124,12 @@ router.put(
         ).isLength({ min:  6}), // Check the password
         check("coun_name", "coun_name is required").notEmpty(), // Check the coun_name
         check("coun_gender", "Gender is required").notEmpty(), // Check the gender
-        check("coun_phone", "Phone is required").notEmpty(), // Check the phone
+        check("coun_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
+        check("coun_age", "Age is an Integer.").isInt(), // Check the age
+        check("coun_email", "Please enter correct email.").isEmail(), // Check the email
+        check("coun_company", "Company is required.").notEmpty(), // check the company
+        check("coun_title", "Title is required.").notEmpty(), // Check the title
+        check("coun_identity", "Please enter vaild identity.").isLength(18) // Check the identity
     ],
     async(req, res) => {
         try {
@@ -138,6 +148,12 @@ router.put(
                 coun_name,
                 coun_gender,
                 coun_phone,
+                coun_avatar,
+                coun_age,
+                coun_identity,
+                coun_email,
+                coun_company,
+                coun_title,
             } = req.body;
 
             // Create user object
@@ -148,6 +164,12 @@ router.put(
                 coun_name,
                 coun_gender,
                 coun_phone,
+                coun_avatar,
+                coun_age,
+                coun_identity,
+                coun_email,
+                coun_company,
+                coun_title,
             };
 
             // Check gender
@@ -159,9 +181,27 @@ router.put(
                 return res.status(400).json({ msg: "Gender is not valid" });
             }
 
+                  // Check identity
+            var reg_id = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+            if(!reg_id.test(coun_identity)){
+                return res.status(400).json({ msg: "Identity is not valid" });
+            }
+
+            // Check phone
+            var reg_ph = /^1[0-9]{10}/;
+            if(!reg_ph.test(coun_phone)){
+                return res.status(400).json({ msg: "PhoneNumber is not valid." });
+            }
+
+            // Check coun_name
+            var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+            if(!reg_name.test(coun_name)){
+                return res.status(400).json({ msg: "Please enter vaild admin_Name."});
+            }
+
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_name = "${user_name}" AND user_id=${user_id}) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id}) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -180,7 +220,16 @@ router.put(
 
                 // Update details in counsellors table
                 await promisePool.query(
-                    `UPDATE counsellor SET coun_name='${coun_name}', coun_gender='${coun_gender}', coun_phone='${coun_phone}' WHERE coun_id=${user_id}`
+                    `UPDATE counsellor SET coun_name='${coun_name}',
+                                           coun_gender='${coun_gender}',
+                                           coun_phone='${coun_phone}',
+                                           coun_avatar='${coun_avatar}',
+                                           coun_age=${coun_age},
+                                           coun_identity='${coun_identity}',
+                                           coun_email='${coun_email}',
+                                           coun_company='${coun_company}',
+                                           coun_title='${coun_title}'
+                     WHERE coun_id=${user_id}`
                 );
 
                 // Send updated details to the client
@@ -198,7 +247,6 @@ router.put(
 // @access  Private
 router.put(
     "/supervisor", [
-        //auth,
         check("user_name", "user_name is required").notEmpty(), // Check the user_name
         check(
             "user_password",
@@ -206,7 +254,14 @@ router.put(
         ).isLength({ min: 6 }), // Check the password
         check("sup_name", "sup_name is required").notEmpty(), // Check the sup_name
         check("sup_gender", "Gender is required").notEmpty(), // Check the gender
-        check("sup_phone", "Phone is required").notEmpty(), // Check the phone
+        check("sup_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
+        check("sup_age", "Age is an Integer.").isInt(), // Check the age
+        check("sup_email", "Please enter correct email.").isEmail(), // Check the email
+        check("sup_company", "Company is required.").notEmpty(), // check the company
+        check("sup_title", "Title is required.").notEmpty(), // Check the title
+        check("sup_identity", "Please enter vaild identity.").isLength(18), // Check the identity
+        check("sup_qualification", "Title is required.").notEmpty(), // Check the title
+        check("sup_quaNumber", "Title is required.").notEmpty() // Check the title
     ],
     async(req, res) => {
 
@@ -226,6 +281,14 @@ router.put(
                 sup_name,
                 sup_gender,
                 sup_phone,
+                sup_avatar,
+                sup_age,
+                sup_identity,
+                sup_email,
+                sup_company,
+                sup_title,
+                sup_qualification,
+                sup_quaNumber,
             } = req.body;
 
             // Create user object
@@ -236,6 +299,14 @@ router.put(
                 sup_name,
                 sup_gender,
                 sup_phone,
+                sup_avatar,
+                sup_age,
+                sup_identity,
+                sup_email,
+                sup_company,
+                sup_title,
+                sup_qualification,
+                sup_quaNumber,
             };
 
             // Check gender
@@ -247,9 +318,27 @@ router.put(
                 return res.status(400).json({ msg: "Gender is not valid" });
             }
 
+            // Check identity
+            var reg_id = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+            if(!reg_id.test(sup_identity)){
+                return res.status(400).json({ msg: "Identity is not valid." });
+            }
+
+            // Check phone
+            var reg_ph = /^1[0-9]{10}/;
+            if(!reg_ph.test(sup_phone)){
+                return res.status(400).json({ msg: "PhoneNumber is not valid." });
+            }
+
+            // Check sup_name
+            var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+            if(!reg_name.test(sup_name)){
+                return res.status(400).json({ msg: "Please enter vaild admin_Name."});
+            }
+
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_name = "${user_name}" AND user_id=${user_id} ) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id} ) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -269,7 +358,18 @@ router.put(
 
                     // Update details in students table
                     await promisePool.query(
-                        `UPDATE supervisor SET sup_name='${sup_name}', sup_gender='${sup_gender}', sup_phone='${sup_phone}' WHERE sup_id=${user_id}`
+                        `UPDATE supervisor SET sup_name='${sup_name}', 
+                                               sup_gender='${sup_gender}',
+                                               sup_phone='${sup_phone}',
+                                               sup_avatar='${sup_avatar}',
+                                               sup_age=${sup_age},
+                                               sup_identity='${sup_identity}',
+                                               sup_email='${sup_email}',
+                                               sup_company='${sup_company}',
+                                               sup_title='${sup_title}',
+                                               sup_qualification='${sup_qualification}',
+                                               sup_quaNumber='${sup_quaNumber}'
+                        WHERE sup_id=${user_id}`
                     );
 
                     // Send updated details to the client
@@ -309,7 +409,7 @@ router.delete(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_id<>${user_id} ) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id} ) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -319,18 +419,13 @@ router.delete(
             } else {
                 // Check role
                 if ( role !== "admin") {
-                    return res.status(400).json({ msg: "No authority! Only admin can delete users." });
+                    return res.status(401).json({ msg: "No authority! Only admin can delete users." });
                 }
 
                 try {
                     // Delete user in logins table
                     await promisePool.query(
                         `DELETE FROM login WHERE user_id=${user_id}`
-                    );
-
-                    // Delete user in admin table
-                    await promisePool.query(
-                        `DELETE FROM admin WHERE admin_id=${user_id}`
                     );
                     
                     return res.status(200).json({ msg: "成功"});
@@ -368,7 +463,7 @@ router.delete(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_id<>${user_id} ) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id} ) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -378,7 +473,7 @@ router.delete(
             } else {
                 // Check role
                 if ( role !== "admin") {
-                    return res.status(400).json({ msg: "No authority! Only admin can delete users." });
+                    return res.status(401).json({ msg: "No authority! Only admin can delete users." });
                 }
 
                 try {
@@ -387,10 +482,6 @@ router.delete(
                         `DELETE FROM login WHERE user_id=${user_id}`
                     );
 
-                    // Delete user in admin table
-                    await promisePool.query(
-                        `DELETE FROM counsellor WHERE coun_id=${user_id}`
-                    );
                     return res.status(200).json({ msg: "成功"});
                 } catch (err) {
                     // Catch errors
@@ -426,7 +517,7 @@ router.delete(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_id<>${user_id} ) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id} ) "EXISTS" FROM DUAL`
             );
             const result = rows[0].EXISTS;
 
@@ -436,7 +527,7 @@ router.delete(
             } else {
                 // Check role
                 if ( role !== "admin") {
-                    return res.status(400).json({ msg: "No authority! Only admin can delete users." });
+                    return res.status(401).json({ msg: "No authority! Only admin can delete users." });
                 }
 
                 try {
@@ -445,10 +536,6 @@ router.delete(
                         `DELETE FROM login WHERE user_id=${user_id}`
                     );
 
-                    // Delete user in admin table
-                    await promisePool.query(
-                        `DELETE FROM supervisor WHERE sup_id=${user_id}`
-                    );
                     return res.status(200).json({ msg: "成功"});
                 } catch (err) {
                     // Catch errors

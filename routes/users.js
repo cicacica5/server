@@ -63,6 +63,18 @@ router.post(
         return res.status(400).json({ msg: "Gender is not valid" });
       }
 
+      // Check admin_name
+      var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name.test(admin_name)){
+        return res.status(400).json({ msg: "Please enter vaild admin_Name."});
+      }
+      // Check user_name
+      var reg_userN = /^[a-zA-Z_]+$/;
+      if(!reg_userN.test(user_name)){
+        return res.status(400).json({ msg: "Please enter vaild user_Name."});
+      }
+
+
       try {
         // Check if user exists
         const [rows] = await promisePool.query(
@@ -99,7 +111,7 @@ router.post(
 
           // Add admin details in the DB
           await promisePool.query(
-              `INSERT INTO [admin] (admin_id, admin_name, admin_gender, admin_phone) VALUES (${user_id},"${admin_name}", "${admin_gender}", "${admin_phone}")`
+              `INSERT INTO admin (admin_id, admin_name, admin_gender, admin_phone) VALUES (${user_id},"${admin_name}", "${admin_gender}", "${admin_phone}")`
           );
 
           // Create a token
@@ -123,15 +135,20 @@ router.post(
 // @access  Public
 router.post(
     "/counsellor", [
-      check("user_name", "username is required").isLength({max:32, min:2}), // Check the username
+      check("user_name", "Username length is 2-32.").isLength({max:32, min:2}), // Check the username
       check(
           "user_password",
-          "Please enter a password with 6 or more characters"
+          "Please enter a password with 6 or more characters."
       ).isLength({ min: 6 }), // Check the password
-      check("role", "Role is required").notEmpty(), // Check the role
-      check("coun_name", "coun_name is required").notEmpty(), // Check the coun_name
-      check("coun_gender", "Gender is required").notEmpty(), // Check the gender
-      check("coun_phone", "Phone is required").notEmpty(), // Check the phone
+      check("role", "Role is required.").notEmpty(), // Check the role
+      check("coun_name", "coun_name is required.").notEmpty(), // Check the coun_name
+      check("coun_gender", "Gender is required.").notEmpty(), // Check the gender
+      check("coun_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
+      check("coun_age", "Age is an Integer.").isInt(), // Check the age
+      check("coun_email", "Please enter correct email.").isEmail(), // Check the email
+      check("coun_company", "Company is required.").notEmpty(), // check the company
+      check("coun_title", "Title is required.").notEmpty(), // Check the title
+      check("coun_identity", "Please enter vaild identity.").isLength(18) // Check the identity
     ],
     async(req, res) => {
       // Check for errors
@@ -170,6 +187,28 @@ router.post(
         return res.status(400).json({ msg: "Gender is not valid" });
       }
 
+      // Check identity
+      var reg_id = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+      if(!reg_id.test(coun_identity)){
+        return res.status(400).json({ msg: "Identity is not valid" });
+      }
+
+      // Check phone
+      var reg_ph = /^1[0-9]{10}/;
+      if(!reg_ph.test(coun_phone)){
+          return res.status(400).json({ msg: "PhoneNumber is not valid." });
+      }
+
+      // Check counsellor_name
+      var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name.test(coun_name)){
+        return res.status(400).json({ msg: "Please enter vaild coun_Name."});
+      }
+      // Check user_name
+      var reg_userN = /^[a-zA-Z_]+$/;
+      if(!reg_userN.test(user_name)){
+        return res.status(400).json({ msg: "Please enter vaild user_Name."});
+      }
 
       try {
         // Check if user exists
@@ -239,7 +278,14 @@ router.post(
       check("role", "Role is required").notEmpty(), // Check the role
       check("sup_name", "sup_name is required").notEmpty(), // Check the sup_name
       check("sup_gender", "Gender is required").notEmpty(), // Check the gender
-      check("sup_phone", "Phone is required").notEmpty(), // Check the phone
+      check("sup_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
+      check("sup_age", "Age is an Integer.").isInt(), // Check the age
+      check("sup_email", "Please enter correct email.").isEmail(), // Check the email
+      check("sup_company", "Company is required.").notEmpty(), // check the company
+      check("sup_title", "Title is required.").notEmpty(), // Check the title
+      check("sup_identity", "Please enter vaild identity.").isLength(18), // Check the identity
+      check("sup_qualification", "Title is required.").notEmpty(), // Check the title
+      check("sup_quaNumber", "Title is required.").notEmpty() // Check the title
     ],
     async(req, res) => {
       // Check for errors
@@ -279,6 +325,29 @@ router.post(
       ) {
         return res.status(400).json({ msg: "Gender is not valid" });
       }
+
+      // Check identity
+      var reg = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+      if(!reg.test(sup_identity)){
+        return res.status(400).json({ msg: "Identity is not valid" });
+      }
+
+      // Check phone
+      var reg_ph = /^1[0-9]{10}/;
+      if(!reg_ph.test(sup_phone)){
+        return res.status(400).json({ msg: "PhoneNumber is not valid." });
+      }
+
+      // Check sup_name
+      var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name.test(sup_name)){
+        return res.status(400).json({ msg: "Please enter vaild sup_Name."});
+      }
+      // Check user_name
+      var reg_userN = /^[a-zA-Z_]+$/;
+      if(!reg_userN.test(user_name)){
+        return res.status(400).json({ msg: "Please enter vaild user_Name."});
+      }      
 
       try {
         // Check if user exists
