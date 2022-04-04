@@ -118,7 +118,7 @@ router.put(
         ).isLength({ min:  6}), // Check the password
         check("coun_name", "coun_name is required").notEmpty(), // Check the coun_name
         check("coun_gender", "Gender is required").notEmpty(), // Check the gender
-        check("coun_phone", "Phone is required").notEmpty(), // Check the phone
+        check("coun_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
         check("coun_age", "Age is an Integer.").isInt(), // Check the age
         check("coun_email", "Please enter correct email.").isEmail(), // Check the email
         check("coun_company", "Company is required.").notEmpty(), // check the company
@@ -176,9 +176,15 @@ router.put(
             }
 
                   // Check identity
-            var reg = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
-            if(!reg.test(coun_identity)){
+            var reg_id = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+            if(!reg_id.test(coun_identity)){
                 return res.status(400).json({ msg: "Identity is not valid" });
+            }
+
+            // Check phone
+            var reg_ph = /^1[0-9]{10}/;
+            if(!reg_ph.test(coun_phone)){
+                return res.status(400).json({ msg: "PhoneNumber is not valid." });
             }
 
             // Check if user exists
@@ -236,7 +242,7 @@ router.put(
         ).isLength({ min: 6 }), // Check the password
         check("sup_name", "sup_name is required").notEmpty(), // Check the sup_name
         check("sup_gender", "Gender is required").notEmpty(), // Check the gender
-        check("sup_phone", "Phone is required").notEmpty(), // Check the phone
+        check("sup_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
         check("sup_age", "Age is an Integer.").isInt(), // Check the age
         check("sup_email", "Please enter correct email.").isEmail(), // Check the email
         check("sup_company", "Company is required.").notEmpty(), // check the company
@@ -301,9 +307,15 @@ router.put(
             }
 
             // Check identity
-            var reg = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
-            if(!reg.test(sup_identity)){
-                return res.status(400).json({ msg: "Identity is not valid" });
+            var reg_id = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
+            if(!reg_id.test(sup_identity)){
+                return res.status(400).json({ msg: "Identity is not valid." });
+            }
+
+            // Check phone
+            var reg_ph = /^1[0-9]{10}/;
+            if(!reg_ph.test(sup_phone)){
+                return res.status(400).json({ msg: "PhoneNumber is not valid." });
             }
 
             // Check if user exists
