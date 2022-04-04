@@ -10,6 +10,8 @@ const router = express.Router();
 /**
  * 创建咨询记录
  * 获取某个咨询师的咨询记录列表
+ * 获取督导及其绑定的咨询师的咨询记录列表
+ * 获取所有人的咨询记录列表
  */
 
 // @route   POST /record
@@ -98,6 +100,80 @@ router.get(
 
                 // Send success message to the client
                 res.send(rows);
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /record/supAndBind
+// @desc    获取督导及其绑定的咨询师的咨询记录列表
+// @access  Public
+
+router.get(
+    "/supAndBind", [
+        check("sup_id", "sup_id is required.").notEmpty(), // Check sup_id
+        check("coun_id", "coun_id is required.").notEmpty(), // Check coun_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const sid = req.query.sup_id;
+        const cid = req.query.coun_id;
+        try {
+            // Check if record exists
+            const [rows] = await promisePool.query(
+                `SELECT * FROM record WHERE record.sup_id = ${sid} AND record.coun_id = ${cid}
+                `
+            );
+            const row = rows[0];
+
+            if (!row) {
+                // Schedule already exists
+                return res.status(400).json({ msg: "暂无咨询记录" });
+            } else {
+                // Send success message to the client
+                return res.status(200).json({
+                    "RecordList": rows
+                });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /record/all
+// @desc    获取所有人的咨询记录列表
+// @access  Public
+
+router.get(
+    "/all", 
+    async(req, res) => {
+
+        try {
+            // Check if record exists
+            const [rows] = await promisePool.query(
+                `SELECT * FROM record`
+            );
+            const result = rows[0];
+
+            if (!result) {
+                // Schedule already exists
+                return res.status(400).json({ msg: "暂无咨询记录" });
+            } else {
+                // Send success message to the client
+                return res.status(200).json({
+                    "RecordList": rows
+                });
             }
         } catch (err) {
             // Catch errors
