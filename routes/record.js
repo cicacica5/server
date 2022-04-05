@@ -91,7 +91,7 @@ router.get(
             const [rows] = await promisePool.query(
                 ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, period FROM record
                                                                                                                                                       INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
-                                                                                                                                                      INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                                                                                                                                                      LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
                                                                                                                                                       INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
                   WHERE record.coun_id = "${coun_id}"`
             );
@@ -166,7 +166,10 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT * FROM record`
+                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, period FROM record
+                                                                                                                                                      INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
+                                                                                                                                                      LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
+                                                                                                                                                      INNER JOIN counsellor ON record.coun_id = counsellor.coun_id`
             );
             const result = rows[0];
 
