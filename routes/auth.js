@@ -15,6 +15,7 @@ const router = express.Router();
 /**
  * 获取当前用户信息
  * 授权用户登录
+ * 腾讯云登录
  * 用户登出
  * 验证用户
  */
@@ -226,6 +227,45 @@ router.post(
         }
     }
 );
+
+// @route   GET /auth/IM
+// @desc    腾讯云登录
+// @access  Private
+router.get("/IM", //auth,
+    async(req, res) => {
+        // Extract user id from req
+        let user_name = req.query.user_name;
+
+        try {
+            // Get user_id from DB
+            const [rows] = await promisePool.query(
+                `SELECT user_id from login WHERE user_name='${user_name}'`
+            );
+
+            // Extract user_id and role from rows
+            const { user_id } = rows[0];
+
+            // Create user object
+            let user = {
+                user_id,
+                user_name,
+            };
+
+            userSig = genTestUserSig(user_id).userSig;
+
+                // Store the details in the user object
+                user = {
+                    ...user,
+                    userSig
+                };
+                // Send user object to the client
+                res.json(user);
+
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    });
 
 // @route   DELETE /auth
 // @desc    用户登出
