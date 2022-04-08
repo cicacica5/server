@@ -119,7 +119,6 @@ router.get(
 router.get(
     "/supAndBind", [
         check("sup_id", "sup_id is required.").notEmpty(), // Check sup_id
-        check("coun_id", "coun_id is required.").notEmpty(), // Check coun_id
     ],
     async(req, res) => {
         // Check for errors
@@ -130,11 +129,11 @@ router.get(
         }
 
         const sid = req.query.sup_id;
-        const cid = req.query.coun_id;
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT * FROM record WHERE record.sup_id = ${sid} AND record.coun_id = ${cid}
+                `SELECT * FROM record JOIN bind
+                 WHERE bind.sup_id = ${sid} AND record.sup_id = ${sid}
                 `
             );
             const row = rows[0];

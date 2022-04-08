@@ -29,7 +29,7 @@ router.post(
       check("role", "Role is required").notEmpty(), // Check the role
       check("admin_name", "admin_name is required").notEmpty(), // Check the admin_name
       check("admin_gender", "Gender is required").notEmpty(), // Check the gender
-      check("admin_phone", "Phone is required").notEmpty(), // Check the phone
+      check("admin_phone", "Phone is required").isLength(11), // Check the phone
     ],
     async(req, res) => {
       // Check for errors
@@ -74,6 +74,11 @@ router.post(
         return res.status(400).json({ msg: "Please enter vaild user_Name."});
       }
 
+      // Check phone
+      var reg_ph = /^1[0-9]{10}/;
+      if(!reg_ph.test(admin_phone)){
+        return res.status(400).json({ msg: "PhoneNumber is not valid." });
+      }
 
       try {
         // Check if user exists
