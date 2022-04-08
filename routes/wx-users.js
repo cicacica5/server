@@ -447,7 +447,7 @@ router.get(
     //
     const [rows] = await promisePool.query(
       `SELECT counsellor.coun_id, counsellor.coun_name, counsellor.coun_avatar, counsellor.coun_status, round(avg(score),2) as coun_avg_score
-      FROM counsellor JOIN feedback
+      FROM counsellor LEFT JOIN feedback
       ON counsellor.coun_id = feedback.target_id
       GROUP BY counsellor.coun_id`
     );

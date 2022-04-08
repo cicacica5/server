@@ -44,7 +44,25 @@ router.get("/counsellorList", [
 
             if (role == "admin") { // Check if the user is admin
                 // Get all students from the DB
-                const [counsellors] = await promisePool.query(`SELECT * from counsellor`);
+                const [counsellors] = await promisePool.query(`SELECT counsellor.coun_id,
+                                                                      counsellor.coun_name,
+                                                                      counsellor.coun_gender,
+                                                                      counsellor.coun_phone,
+                                                                      counsellor.coun_age,
+                                                                      counsellor.coun_identity,
+                                                                      counsellor.coun_email,
+                                                                      counsellor.coun_company,
+                                                                      counsellor.coun_title,
+                                                                      avg(score) as score,
+                                                                      SUM(period) as total_time,
+                                                                      COUNT(record_id) as total_num,
+                                                                      login.user_name
+                                                               FROM counsellor
+                                                                        LEFT JOIN feedback ON counsellor.coun_id = feedback.target_id
+                                                                        LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                                                                        LEFT JOIN login ON counsellor.coun_id = login.user_id
+                                                               GROUP BY counsellor.coun_id
+                `);
 
                 // Send data to the client
                 res.json(counsellors);
@@ -89,7 +107,24 @@ router.get("/supervisorList", [
 
             if (role == "admin") { // Check if the user is admin
                 // Get all students from the DB
-                const [supervisors] = await promisePool.query(`SELECT * from supervisor`);
+                const [supervisors] = await promisePool.query(`SELECT supervisor.sup_id,
+                                                                      supervisor.sup_name,
+                                                                      supervisor.sup_gender,
+                                                                      supervisor.sup_phone,
+                                                                      supervisor.sup_age,
+                                                                      supervisor.sup_identity,
+                                                                      supervisor.sup_email,
+                                                                      supervisor.sup_company,
+                                                                      supervisor.sup_title,
+                                                                      supervisor.sup_qualification,
+                                                                      supervisor.sup_quaNumber,
+                                                                      SUM(period) as total_time,
+                                                                      COUNT(record_id) as total_num,
+                                                                      login.user_name
+                                                               FROM supervisor
+                                                                        LEFT JOIN record ON supervisor.sup_id = record.sup_id
+                                                                        LEFT JOIN login ON supervisor.sup_id = login.user_id
+                                                               GROUP BY supervisor.sup_id`);
 
                 // Send data to the client
                 res.json(supervisors);
@@ -134,7 +169,7 @@ router.get("/visitorList", [
 
             if (role == "admin") { // Check if the user is admin
                 // Get all students from the DB
-                const [visitors] = await promisePool.query(`SELECT * from visitor`);
+                const [visitors] = await promisePool.query(`SELECT * FROM visitor`);
 
                 // Send data to the client
                 res.json(visitors);
