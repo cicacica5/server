@@ -132,9 +132,9 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT * FROM record JOIN bind
-                 WHERE bind.sup_id = ${sid} AND record.sup_id = ${sid}
-                `
+                `SELECT * FROM record JOIN bind 
+                 ON record.sup_id = bind.sup_id AND record.coun_id = bind.coun_id
+                 WHERE record.sup_id = ${sid} AND bind.sup_id = ${sid}`
             );
             const row = rows[0];
 
