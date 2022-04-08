@@ -130,8 +130,7 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT * FROM record WHERE record.sup_id = ${sid} AND record.coun_id = ${cid}
-                `
+                `SELECT * FROM record WHERE record.sup_id = ${sid} AND record.coun_id = ${cid}`
             );
             const row = rows[0];
 
