@@ -284,8 +284,8 @@ router.post(
       check("sup_company", "Company is required.").notEmpty(), // check the company
       check("sup_title", "Title is required.").notEmpty(), // Check the title
       check("sup_identity", "Please enter vaild identity.").isLength(18), // Check the identity
-      check("sup_qualification", "Title is required.").notEmpty(), // Check the title
-      check("sup_quaNumber", "Title is required.").notEmpty() // Check the title
+      check("sup_qualification", "Qualification is required.").notEmpty(), // Check the title
+      check("sup_quaNumber", "Qualification number is required.").notEmpty() // Check the title
     ],
     async(req, res) => {
       // Check for errors
@@ -347,7 +347,7 @@ router.post(
       var reg_userN = /^[a-zA-Z_]+$/;
       if(!reg_userN.test(user_name)){
         return res.status(400).json({ msg: "Please enter vaild user_Name."});
-      }      
+      }
 
       try {
         // Check if user exists
