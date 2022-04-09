@@ -188,4 +188,127 @@ router.get(
     }
 );
 
+// @route   GET /record/todayNum
+// @desc    获取咨询师或督导的今日咨询数
+// @access  Public
+
+router.get(
+    "/todayNum", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const ur = user_role[0].role;
+            if(ur == "counsellor"){
+                const [result] = await promisePool.query(
+                    `SELECT counsellor.coun_id, counsellor.coun_name, login.role,
+                            COUNT(DateDiff(record.begin_time,CURRENT_DATE())=0 or null) AS today_num
+                     FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
+                                     LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                     WHERE counsellor.coun_id = ${user_id}`
+                );
+                if (!result) {
+                    // Schedule already exists
+                    return res.status(400).json({ msg: "今天暂无咨询" });
+                } else {
+                    // Send success message to the client
+                    res.send(result);
+                }
+            } else if(ur == "supervisor"){
+                const [result] = await promisePool.query(
+                    `SELECT supervisor.sup_id, supervisor.sup_name, login.role,
+                            COUNT(DateDiff(record.begin_time,CURRENT_DATE())=0 or null) AS today_num
+                     FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
+                                     LEFT JOIN record ON supervisor.sup_id = record.sup_id
+                     WHERE supervisor.sup_id = ${user_id}`
+                );
+                if (!result) {
+                    // Schedule already exists
+                    return res.status(400).json({ msg: "今天暂无咨询" });
+                } else {
+                    // Send success message to the client
+                    res.send(result);
+                }
+            } else {
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /record/todayTime
+// @desc    获取咨询师或督导的今日咨询时长
+// @access  Public
+
+router.get(
+    "/todayTime", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const ur = user_role[0].role;
+            if(ur == "counsellor"){
+                const [result] = await promisePool.query(
+                    `SELECT counsellor.coun_id, counsellor.coun_name, login.role,
+                            SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0)) AS today_time
+                     FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
+                                     LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                     WHERE counsellor.coun_id = ${user_id}`
+                );
+                if (!result) {
+                    // Schedule already exists
+                    return res.status(400).json({ msg: "今天暂无咨询" });
+                } else {
+                    // Send success message to the client
+                    res.send(result);
+                }
+            } else if(ur == "supervisor"){
+                const [result] = await promisePool.query(
+                    `SELECT supervisor.sup_id, supervisor.sup_name, login.role, 
+                            SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0)) AS today_time
+                     FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
+                                     LEFT JOIN record ON supervisor.sup_id = record.sup_id
+                     WHERE supervisor.sup_id = ${user_id}`
+                );
+                if (!result) {
+                    // Schedule already exists
+                    return res.status(400).json({ msg: "今天暂无咨询" });
+                } else {
+                    // Send success message to the client
+                    res.send(result);
+                }
+            } else {
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
 module.exports = router;
