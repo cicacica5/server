@@ -136,8 +136,14 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT * FROM record JOIN bind 
-                 ON record.sup_id = bind.sup_id AND record.coun_id = bind.coun_id
+                `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
+                                          counsellor.coun_id, counsellor.coun_name,
+                        record.help_or_not, supervisor.sup_id, supervisor.sup_name,
+                        record.begin_time, record.end_time, record.content, record.period
+                 FROM record JOIN bind ON record.sup_id = bind.sup_id AND record.coun_id = bind.coun_id
+                             INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                             INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
+                             INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
                  WHERE record.sup_id = ${sid} AND bind.sup_id = ${sid}`
             );
             const row = rows[0];
@@ -377,16 +383,30 @@ router.get(
             const ur = user_role[0].role;
             if(ur == "counsellor"){
                 const [result] = await promisePool.query(
-                    `SELECT * FROM record WHERE coun_id = ${user_id}
-                     ORDER BY end_time DESC
+                    `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
+                                              counsellor.coun_id, counsellor.coun_name,
+                            record.help_or_not,supervisor.sup_id, supervisor.sup_name,
+                            record.begin_time, record.end_time, record.content, record.period
+                     FROM record LEFT JOIN visitor ON record.visitor_id = visitor.visitor_id
+                                 INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
+                                 INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                     WHERE record.coun_id = ${user_id}
+                     ORDER BY record.end_time DESC
                      LIMIT ${n}`
                 );
                     // Send success message to the client
                     res.send(result);
             } else if(ur == "supervisor"){
                 const [result] = await promisePool.query(
-                    `SELECT * FROM record WHERE sup_id = ${user_id}
-                     ORDER BY end_time DESC
+                    `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
+                                              counsellor.coun_id, counsellor.coun_name,
+                            record.help_or_not,supervisor.sup_id, supervisor.sup_name,
+                            record.begin_time, record.end_time, record.content, record.period
+                     FROM record LEFT JOIN visitor ON record.visitor_id = visitor.visitor_id
+                                 INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
+                                 INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                     WHERE record.sup_id = ${user_id}
+                     ORDER BY record.end_time DESC
                      LIMIT ${n}`
                 );
                     // Send success message to the client
