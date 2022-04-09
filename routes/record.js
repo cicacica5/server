@@ -93,7 +93,7 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, period FROM record
+                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, ROUND(period/60) AS period FROM record
                                                                                                                                                       INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
                                                                                                                                                       LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
                                                                                                                                                       INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
@@ -139,7 +139,7 @@ router.get(
                 `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
                                           counsellor.coun_id, counsellor.coun_name,
                         record.help_or_not, supervisor.sup_id, supervisor.sup_name,
-                        record.begin_time, record.end_time, record.content, record.period
+                        record.begin_time, record.end_time, record.content, ROUND(record.period/60) AS period
                  FROM record JOIN bind ON record.sup_id = bind.sup_id AND record.coun_id = bind.coun_id
                              INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
                              INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
@@ -175,7 +175,7 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, period FROM record
+                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, ROUND(period/60) AS period FROM record
                                                                                                                                                       INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
                                                                                                                                                       LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
                                                                                                                                                       INNER JOIN counsellor ON record.coun_id = counsellor.coun_id`
@@ -275,7 +275,7 @@ router.get(
             if(ur == "counsellor"){
                 const [result] = await promisePool.query(
                     `SELECT counsellor.coun_id, counsellor.coun_name, login.role,
-                            SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0)) AS today_time
+                            ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))/60) AS today_time
                      FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
                                      LEFT JOIN record ON counsellor.coun_id = record.coun_id
                      WHERE counsellor.coun_id = ${user_id}`
@@ -285,7 +285,7 @@ router.get(
             } else if(ur == "supervisor"){
                 const [result] = await promisePool.query(
                     `SELECT supervisor.sup_id, supervisor.sup_name, login.role, 
-                            SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0)) AS today_time
+                            ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))/60) AS today_time
                      FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
                                      LEFT JOIN record ON supervisor.sup_id = record.sup_id
                      WHERE supervisor.sup_id = ${user_id}`
@@ -302,12 +302,12 @@ router.get(
     }
 );
 
-// @route   GET /record/allNum
-// @desc    获取咨询师或督导的累计咨询数
+// @route   GET /record/allNumandTime
+// @desc    获取咨询师或督导的累计咨询次数+时长
 // @access  Public
 
 router.get(
-    "/allNum", [
+    "/allNumandTime", [
         check("user_id", "user_id is required.").notEmpty(), // check user_id
     ],
     async(req, res) => {
@@ -326,7 +326,8 @@ router.get(
             const ur = user_role[0].role;
             if(ur == "counsellor"){
                 const [result] = await promisePool.query(
-                    `SELECT counsellor.coun_id, counsellor.coun_name, login.role, COUNT(record.record_id OR NULL) AS all_num
+                    `SELECT counsellor.coun_id, counsellor.coun_name, login.role,
+                            COUNT(record.record_id OR NULL) AS all_num, ROUND(SUM(record.period)/60) AS all_minitus
                      FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
                                      LEFT JOIN record ON counsellor.coun_id = record.coun_id
                      WHERE counsellor.coun_id = ${user_id}`
@@ -335,7 +336,8 @@ router.get(
                     res.send(result);
             } else if(ur == "supervisor"){
                 const [result] = await promisePool.query(
-                    `SELECT supervisor.sup_id, supervisor.sup_name, login.role, COUNT(record.record_id OR NULL) AS all_num
+                    `SELECT supervisor.sup_id, supervisor.sup_name, login.role, 
+                            COUNT(record.record_id OR NULL) AS all_num, ROUND(SUM(record.period)/60) AS all_minitus
                      FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
                                      LEFT JOIN record ON supervisor.sup_id = record.sup_id
                      WHERE supervisor.sup_id = ${user_id}`
@@ -386,7 +388,7 @@ router.get(
                     `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
                                               counsellor.coun_id, counsellor.coun_name,
                             record.help_or_not,supervisor.sup_id, supervisor.sup_name,
-                            record.begin_time, record.end_time, record.content, record.period
+                            record.begin_time, record.end_time, record.content, ROUND(record.period/60) AS period
                      FROM record LEFT JOIN visitor ON record.visitor_id = visitor.visitor_id
                                  INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
                                  INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
@@ -401,7 +403,7 @@ router.get(
                     `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
                                               counsellor.coun_id, counsellor.coun_name,
                             record.help_or_not,supervisor.sup_id, supervisor.sup_name,
-                            record.begin_time, record.end_time, record.content, record.period
+                            record.begin_time, record.end_time, record.content, ROUND(record.period/60) AS period
                      FROM record LEFT JOIN visitor ON record.visitor_id = visitor.visitor_id
                                  INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
                                  INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
