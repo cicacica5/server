@@ -218,13 +218,8 @@ router.get(
                                      LEFT JOIN record ON counsellor.coun_id = record.coun_id
                      WHERE counsellor.coun_id = ${user_id}`
                 );
-                if (!result) {
-                    // Schedule already exists
-                    return res.status(400).json({ msg: "今天暂无咨询" });
-                } else {
                     // Send success message to the client
                     res.send(result);
-                }
             } else if(ur == "supervisor"){
                 const [result] = await promisePool.query(
                     `SELECT supervisor.sup_id, supervisor.sup_name, login.role,
@@ -233,13 +228,8 @@ router.get(
                                      LEFT JOIN record ON supervisor.sup_id = record.sup_id
                      WHERE supervisor.sup_id = ${user_id}`
                 );
-                if (!result) {
-                    // Schedule already exists
-                    return res.status(400).json({ msg: "今天暂无咨询" });
-                } else {
                     // Send success message to the client
                     res.send(result);
-                }
             } else {
                 return res.status(401).json({ msg: "role is invaild." });
             }
@@ -280,13 +270,8 @@ router.get(
                                      LEFT JOIN record ON counsellor.coun_id = record.coun_id
                      WHERE counsellor.coun_id = ${user_id}`
                 );
-                if (!result) {
-                    // Schedule already exists
-                    return res.status(400).json({ msg: "今天暂无咨询" });
-                } else {
                     // Send success message to the client
                     res.send(result);
-                }
             } else if(ur == "supervisor"){
                 const [result] = await promisePool.query(
                     `SELECT supervisor.sup_id, supervisor.sup_name, login.role, 
@@ -295,13 +280,8 @@ router.get(
                                      LEFT JOIN record ON supervisor.sup_id = record.sup_id
                      WHERE supervisor.sup_id = ${user_id}`
                 );
-                if (!result) {
-                    // Schedule already exists
-                    return res.status(400).json({ msg: "今天暂无咨询" });
-                } else {
                     // Send success message to the client
                     res.send(result);
-                }
             } else {
                 return res.status(401).json({ msg: "role is invaild." });
             }
