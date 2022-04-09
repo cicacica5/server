@@ -12,6 +12,10 @@ const router = express.Router();
  * 获取某个咨询师的咨询记录列表
  * 获取督导及其绑定的咨询师的咨询记录列表
  * 获取所有人的咨询记录列表
+ * 获取咨询师或督导的今日咨询数
+ * 获取咨询师或督导的今日咨询时长
+ * 获取咨询师或督导的累计咨询数
+ * 获取最近n个咨询/求助记录
  */
 
 // @route   POST /record
@@ -279,6 +283,111 @@ router.get(
                      FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
                                      LEFT JOIN record ON supervisor.sup_id = record.sup_id
                      WHERE supervisor.sup_id = ${user_id}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else {
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /record/allNum
+// @desc    获取咨询师或督导的累计咨询数
+// @access  Public
+
+router.get(
+    "/allNum", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const ur = user_role[0].role;
+            if(ur == "counsellor"){
+                const [result] = await promisePool.query(
+                    `SELECT counsellor.coun_id, counsellor.coun_name, login.role, COUNT(record.record_id OR NULL) AS all_num
+                     FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
+                                     LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                     WHERE counsellor.coun_id = ${user_id}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else if(ur == "supervisor"){
+                const [result] = await promisePool.query(
+                    `SELECT supervisor.sup_id, supervisor.sup_name, login.role, COUNT(record.record_id OR NULL) AS all_num
+                     FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
+                                     LEFT JOIN record ON supervisor.sup_id = record.sup_id
+                     WHERE supervisor.sup_id = ${user_id}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else {
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /record/recent
+// @desc    获取最近n个咨询/求助记录
+// @access  Public
+
+router.get(
+    "/recent", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+        check("n", "n must be an Integer.").isInt(), // check n
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        const n = req.query.n;
+
+        // check n
+        if(n <= 0 ){
+            return res.status(401).json({ msg: "n must be positive Int." });
+        }
+        try {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const ur = user_role[0].role;
+            if(ur == "counsellor"){
+                const [result] = await promisePool.query(
+                    `SELECT * FROM record WHERE coun_id = ${user_id}
+                     ORDER BY end_time DESC
+                     LIMIT ${n}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else if(ur == "supervisor"){
+                const [result] = await promisePool.query(
+                    `SELECT * FROM record WHERE sup_id = ${user_id}
+                     ORDER BY end_time DESC
+                     LIMIT ${n}`
                 );
                     // Send success message to the client
                     res.send(result);
