@@ -144,4 +144,51 @@ router.get("/bindCounsellorList", [
         }
     });
 
+// @route   GET /supervisor/bindOnlineCounsellorList
+// @desc    获取绑定的在线咨询师列表
+// @access  Private
+router.get("/bindOnlineCounsellorList", [
+    check("user_id", "user_id is required").notEmpty(), // Check the user_id
+],
+async(req, res) => {
+
+    try {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        let user_id = req.query.user_id;
+
+        // Check if user exists
+        const [rows] = await promisePool.query(
+            `SELECT role from login WHERE user_id = '${user_id}'`
+        );
+
+        // Extract role from rows
+        const role = rows[0].role;
+
+        if (role == "supervisor") { // Check if the user is supervisor
+            // Get all students from the DB
+            const [counsellors] = await promisePool.query(
+                `SELECT * FROM counsellor INNER JOIN bind ON counsellor.coun_id = bind.coun_id
+                 WHERE sup_id = "${user_id}" AND (counsellor.coun_status = "free" OR counsellor.coun_status = "busy")
+                 `);
+
+            // Send data to the client
+            res.json(counsellors);
+
+        } else {
+            // Unauthorized
+            res.status(401).json({ msg: "仅限督导访问！！" });
+        }
+
+    } catch (err) {
+        // Catch errors
+        throw err;
+    }
+});
+
 module.exports = router;
