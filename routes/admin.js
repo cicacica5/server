@@ -15,10 +15,11 @@ const router = express.Router();
  * 修改访客状态
  * 获取在线咨询师列表
  * 获取在线督导列表
- * ====================
  * 本月咨询师的咨询数排行
  * 所有咨询师评价排行
  * 最近7天的咨询数量
+ * 当天排班咨询师人数
+ * 当天排班督导人数
  */
 
 // @route   GET /admin/counsellorList
@@ -534,5 +535,83 @@ try {
     throw err;
 }
 });
+
+// @route   GET /admin/TodayCounOnDuty
+// @desc    当天排班咨询师人数
+// @access  Private
+
+router.get("/TodayCounOnDuty", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = rows[0].role;
+            if(role == "admin"){
+                const [result] = await promisePool.query(
+                    `SELECT CURDATE() AS today, COUNT(schedule.user_id) AS coun_num
+                     FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                     WHERE login.role = "counsellor" AND schedule.date = CURDATE()`
+                );
+                    // Send success message to the client
+                    res.json(result);
+            } else {
+                return res.status(401).json({ msg: "仅限管理员访问！！" });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /admin/TodaySupOnDuty
+// @desc    当天排班督导人数
+// @access  Private
+
+router.get("/TodaySupOnDuty", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = rows[0].role;
+            if(role == "admin"){
+                const [result] = await promisePool.query(
+                    `SELECT CURDATE() today, COUNT(schedule.user_id) AS sup_num
+                     FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                     WHERE login.role = "supervisor" AND schedule.date = CURDATE()`
+                );
+                    // Send success message to the client
+                    res.json(result);
+            } else {
+                return res.status(401).json({ msg: "仅限管理员访问！！" });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
 
 module.exports = router;
