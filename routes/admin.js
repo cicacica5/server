@@ -559,9 +559,10 @@ router.get("/TodayCounOnDuty", [
             const role = rows[0].role;
             if(role == "admin"){
                 const [result] = await promisePool.query(
-                    `SELECT CURDATE() AS today, COUNT(schedule.user_id) AS coun_num
+                    `SELECT schedule.date, COUNT(schedule.user_id) AS coun_num
                      FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
-                     WHERE login.role = "counsellor" AND schedule.date = CURDATE()`
+                     WHERE login.role = "counsellor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT(CURDATE(),'%Y%m'))
+                     GROUP BY schedule.date`
                 );
                     // Send success message to the client
                     res.json(result);
@@ -598,9 +599,10 @@ router.get("/TodaySupOnDuty", [
             const role = rows[0].role;
             if(role == "admin"){
                 const [result] = await promisePool.query(
-                    `SELECT CURDATE() today, COUNT(schedule.user_id) AS sup_num
+                    `SELECT schedule.date, COUNT(schedule.user_id) AS sup_num
                      FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
-                     WHERE login.role = "supervisor" AND schedule.date = CURDATE()`
+                     WHERE login.role = "supervisor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT(CURDATE(),'%Y%m'))
+                     GROUP BY schedule.date`
                 );
                     // Send success message to the client
                     res.json(result);
