@@ -12,6 +12,10 @@ const router = express.Router();
  * 获取某个咨询师的咨询记录列表
  * 获取督导及其绑定的咨询师的咨询记录列表
  * 获取所有人的咨询记录列表
+ * 获取咨询师或督导的今日咨询数
+ * 获取咨询师或督导的今日咨询时长
+ * 获取咨询师或督导的累计咨询数
+ * 获取最近n个咨询/求助记录
  */
 
 // @route   POST /record
@@ -89,7 +93,7 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, period FROM record
+                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, ROUND(period/60) AS period FROM record
                                                                                                                                                       INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
                                                                                                                                                       LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
                                                                                                                                                       INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
@@ -132,9 +136,15 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT * FROM record JOIN bind
-                 WHERE bind.sup_id = ${sid} AND record.sup_id = ${sid}
-                `
+                `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
+                                          counsellor.coun_id, counsellor.coun_name,
+                        record.help_or_not, supervisor.sup_id, supervisor.sup_name,
+                        record.begin_time, record.end_time, record.content, ROUND(record.period/60) AS period
+                 FROM record JOIN bind ON record.sup_id = bind.sup_id AND record.coun_id = bind.coun_id
+                             INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                             INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
+                             INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
+                 WHERE record.sup_id = ${sid} AND bind.sup_id = ${sid}`
             );
             const row = rows[0];
 
@@ -165,7 +175,7 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, period FROM record
+                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, ROUND(period/60) AS period FROM record
                                                                                                                                                       INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
                                                                                                                                                       LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
                                                                                                                                                       INNER JOIN counsellor ON record.coun_id = counsellor.coun_id`
@@ -188,4 +198,228 @@ router.get(
     }
 );
 
+// @route   GET /record/todayNum
+// @desc    获取咨询师或督导的今日咨询数
+// @access  Public
+
+router.get(
+    "/todayNum", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const ur = user_role[0].role;
+            if(ur == "counsellor"){
+                const [result] = await promisePool.query(
+                    `SELECT counsellor.coun_id, counsellor.coun_name, login.role,
+                            COUNT(DateDiff(record.begin_time,CURRENT_DATE())=0 or null) AS today_num
+                     FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
+                                     LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                     WHERE counsellor.coun_id = ${user_id}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else if(ur == "supervisor"){
+                const [result] = await promisePool.query(
+                    `SELECT supervisor.sup_id, supervisor.sup_name, login.role,
+                            COUNT(DateDiff(record.begin_time,CURRENT_DATE())=0 or null) AS today_num
+                     FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
+                                     LEFT JOIN record ON supervisor.sup_id = record.sup_id
+                     WHERE supervisor.sup_id = ${user_id}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else {
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /record/todayTime
+// @desc    获取咨询师或督导的今日咨询时长
+// @access  Public
+
+router.get(
+    "/todayTime", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const ur = user_role[0].role;
+            if(ur == "counsellor"){
+                const [result] = await promisePool.query(
+                    `SELECT counsellor.coun_id, counsellor.coun_name, login.role,
+                            ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))/60) AS today_time
+                     FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
+                                     LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                     WHERE counsellor.coun_id = ${user_id}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else if(ur == "supervisor"){
+                const [result] = await promisePool.query(
+                    `SELECT supervisor.sup_id, supervisor.sup_name, login.role, 
+                            ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))/60) AS today_time
+                     FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
+                                     LEFT JOIN record ON supervisor.sup_id = record.sup_id
+                     WHERE supervisor.sup_id = ${user_id}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else {
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /record/allNumandTime
+// @desc    获取咨询师或督导的累计咨询次数+时长
+// @access  Public
+
+router.get(
+    "/allNumandTime", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const ur = user_role[0].role;
+            if(ur == "counsellor"){
+                const [result] = await promisePool.query(
+                    `SELECT counsellor.coun_id, counsellor.coun_name, login.role,
+                            COUNT(record.record_id OR NULL) AS all_num, ROUND(SUM(record.period)/60) AS all_minitus
+                     FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
+                                     LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                     WHERE counsellor.coun_id = ${user_id}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else if(ur == "supervisor"){
+                const [result] = await promisePool.query(
+                    `SELECT supervisor.sup_id, supervisor.sup_name, login.role, 
+                            COUNT(record.record_id OR NULL) AS all_num, ROUND(SUM(record.period)/60) AS all_minitus
+                     FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
+                                     LEFT JOIN record ON supervisor.sup_id = record.sup_id
+                     WHERE supervisor.sup_id = ${user_id}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else {
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /record/recent
+// @desc    获取最近n个咨询/求助记录
+// @access  Public
+
+router.get(
+    "/recent", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+        check("n", "n must be an Integer.").isInt(), // check n
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        const n = req.query.n;
+
+        // check n
+        if(n <= 0 ){
+            return res.status(401).json({ msg: "n must be positive Int." });
+        }
+        try {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const ur = user_role[0].role;
+            if(ur == "counsellor"){
+                const [result] = await promisePool.query(
+                    `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
+                                              counsellor.coun_id, counsellor.coun_name,
+                            record.help_or_not,supervisor.sup_id, supervisor.sup_name,
+                            record.begin_time, record.end_time, record.content, ROUND(record.period/60) AS period
+                     FROM record LEFT JOIN visitor ON record.visitor_id = visitor.visitor_id
+                                 INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
+                                 INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                     WHERE record.coun_id = ${user_id}
+                     ORDER BY record.end_time DESC
+                     LIMIT ${n}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else if(ur == "supervisor"){
+                const [result] = await promisePool.query(
+                    `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
+                                              counsellor.coun_id, counsellor.coun_name,
+                            record.help_or_not,supervisor.sup_id, supervisor.sup_name,
+                            record.begin_time, record.end_time, record.content, ROUND(record.period/60) AS period
+                     FROM record LEFT JOIN visitor ON record.visitor_id = visitor.visitor_id
+                                 INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
+                                 INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                     WHERE record.sup_id = ${user_id}
+                     ORDER BY record.end_time DESC
+                     LIMIT ${n}`
+                );
+                    // Send success message to the client
+                    res.send(result);
+            } else {
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
 module.exports = router;

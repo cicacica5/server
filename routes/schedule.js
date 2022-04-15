@@ -216,13 +216,6 @@ router.post(
         try {
             for (let i = 0; i < date.length; i++) {
                 let date_i = date[i];
-                // 这个isDate判定我本地跑不通，不知道为什么总之先注释掉了
-                // if(!date_i.isDate){
-                //     console.log("出问题的Date:"+datei);
-                //     return res.status(400).json({ msg: "Please enter valid Dates." });
-                // }
-                
-                // Check if schedule exists
                 let [rows] = await promisePool.query(
                     `SELECT EXISTS(SELECT * from schedule WHERE user_id = "${user_id}" and date = "${date_i}") "EXISTS" FROM dual`
                 );
@@ -306,6 +299,10 @@ router.delete(
 router.delete(
     "/dates", [
         check("user_id", "user_id is required").notEmpty(), // Check the user_id
+        check(
+            "date",
+            "Please enter a valid date"
+        ).isDate(), // Check the date
     ],
     async(req, res) => {
         // Check for errors

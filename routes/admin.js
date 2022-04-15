@@ -13,6 +13,13 @@ const router = express.Router();
  * 获取督导列表
  * 获取访客列表
  * 修改访客状态
+ * 获取在线咨询师列表
+ * 获取在线督导列表
+ * 本月咨询师的咨询数排行
+ * 所有咨询师评价排行
+ * 最近7天的咨询数量
+ * 当天排班咨询师人数
+ * 当天排班督导人数
  */
 
 // @route   GET /admin/counsellorList
@@ -237,5 +244,376 @@ router.post(
       }
     }
   );
+
+// @route   GET /admin/onlineCounsellorList
+// @desc    获取在线咨询师列表
+// @access  Private
+router.get("/onlineCounsellorList", [
+    check("user_id", "user_id is required").notEmpty(), // Check the user_id
+],
+async(req, res) => {
+
+try {
+    // Check for errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let user_id = req.query.user_id;
+
+    // Check if user exists
+    const [rows] = await promisePool.query(
+        `SELECT role from login WHERE user_id = '${user_id}'`
+    );
+
+        // Extract role from rows
+        const role = rows[0].role;
+
+        if (role == "admin") { // Check if the user is admin
+            // Get all online Counsellor List
+            const [counsellors] = await promisePool.query(`SELECT counsellor.coun_id,
+                                                                  counsellor.coun_name,
+                                                                  counsellor.coun_gender,
+                                                                  counsellor.coun_phone,
+                                                                  counsellor.coun_status,
+                                                                  counsellor.coun_age,
+                                                                  counsellor.coun_identity,
+                                                                  counsellor.coun_email,
+                                                                  counsellor.coun_company,
+                                                                  counsellor.coun_title,
+                                                                  avg(score) as score,
+                                                                  SUM(period) as total_time,
+                                                                  COUNT(record_id) as total_num,
+                                                                  login.user_name
+                                                           FROM counsellor
+                                                                    LEFT JOIN feedback ON counsellor.coun_id = feedback.target_id
+                                                                    LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                                                                    LEFT JOIN login ON counsellor.coun_id = login.user_id
+                                                           WHERE counsellor.coun_status = "free" OR counsellor.coun_status = "busy" 
+                                                           GROUP BY counsellor.coun_id
+            `);
+
+            // Send data to the client
+            res.json(counsellors);
+
+        } else {
+            // Unauthorized
+            res.status(401).json({ msg: "仅限管理员访问！！" });
+        }
+
+} catch (err) {
+    // Catch errors
+    throw err;
+}
+});
+
+// @route   GET /admin/onlineSupervisorList
+// @desc    获取在线督导列表
+// @access  Private
+router.get("/onlineSupervisorList", [
+    check("user_id", "user_id is required").notEmpty(), // Check the user_id
+],
+async(req, res) => {
+
+try {
+    // Check for errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let user_id = req.query.user_id;
+
+    // Check if user exists
+    const [rows] = await promisePool.query(
+        `SELECT role from login WHERE user_id = '${user_id}'`
+    );
+
+        // Extract role from rows
+        const role = rows[0].role;
+
+        if (role == "admin") { // Check if the user is admin
+            // Get all online Counsellor List
+            const [supervisors] = await promisePool.query(`SELECT supervisor.sup_id,
+                                                                  supervisor.sup_name,
+                                                                  supervisor.sup_gender,
+                                                                  supervisor.sup_phone,
+                                                                  supervisor.sup_status,
+                                                                  supervisor.sup_age,
+                                                                  supervisor.sup_identity,
+                                                                  supervisor.sup_email,
+                                                                  supervisor.sup_company,
+                                                                  supervisor.sup_title,
+                                                                  supervisor.sup_qualification,
+                                                                  supervisor.sup_quaNumber,
+                                                                  SUM(period) as total_time,
+                                                                  COUNT(record_id) as total_num,
+                                                                  login.user_name
+                                                           FROM supervisor
+                                                                    LEFT JOIN record ON supervisor.sup_id = record.sup_id
+                                                                    LEFT JOIN login ON supervisor.sup_id = login.user_id
+                                                           WHERE (supervisor.sup_status = "free" OR supervisor.sup_status = "busy") AND supervisor.sup_id != -1
+                                                           GROUP BY supervisor.sup_id
+            `);
+
+            // Send data to the client
+            res.json(supervisors);
+
+        } else {
+            // Unauthorized
+            res.status(401).json({ msg: "仅限管理员访问！！" });
+        }
+
+} catch (err) {
+    // Catch errors
+    throw err;
+}
+});
+
+// @route   GET /admin/numThisMonthRank
+// @desc    本月咨询师的咨询数排行
+// @access  Private
+router.get("/numThisMonthRank", [
+    check("user_id", "user_id is required").notEmpty(), // Check the user_id
+],
+async(req, res) => {
+
+try {
+    // Check for errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let user_id = req.query.user_id;
+
+    // Check if user exists
+    const [rows] = await promisePool.query(
+        `SELECT role from login WHERE user_id = '${user_id}'`
+    );
+
+        // Extract role from rows
+        const role = rows[0].role;
+
+        if (role == "admin") { // Check if the user is admin
+            // Get all students from the DB
+            const [counsellors] = await promisePool.query(
+                `SELECT counsellor.coun_id,
+                        counsellor.coun_name,
+                        counsellor.coun_gender,
+                        counsellor.coun_phone,
+                        counsellor.coun_age,
+                        counsellor.coun_company,
+                        counsellor.coun_title,
+                        COUNT(IF(DATE_FORMAT(record.end_time,'%Y%m')=DATE_FORMAT(CURDATE(),'%Y%m'), record.record_id, null)) as total_num_thisMonth
+                 FROM counsellor LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                 GROUP BY counsellor.coun_id
+                 ORDER BY total_num_thisMonth DESC
+            `);
+
+            // Send data to the client
+            res.json(counsellors);
+
+        } else {
+            // Unauthorized
+            res.status(401).json({ msg: "仅限管理员访问！！" });
+        }
+
+} catch (err) {
+    // Catch errors
+    throw err;
+}
+});
+
+// @route   GET /admin/counsellorScoreRank
+// @desc    所有咨询师评价排行
+// @access  Private
+router.get("/counsellorScoreRank", [
+    check("user_id", "user_id is required").notEmpty(), // Check the user_id
+],
+async(req, res) => {
+
+try {
+    // Check for errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let user_id = req.query.user_id;
+
+    // Check if user exists
+    const [rows] = await promisePool.query(
+        `SELECT role from login WHERE user_id = '${user_id}'`
+    );
+
+        // Extract role from rows
+        const role = rows[0].role;
+
+        if (role == "admin") { // Check if the user is admin
+            // Get all students from the DB
+            const [counsellors] = await promisePool.query(
+                `SELECT counsellor.coun_id,
+                        counsellor.coun_name,
+                        counsellor.coun_gender,
+                        counsellor.coun_phone,
+                        counsellor.coun_age,
+                        counsellor.coun_company,
+                        counsellor.coun_title,
+                        ROUND(avg(feedback.score),2) as avg_score
+                 FROM counsellor LEFT JOIN feedback ON counsellor.coun_id = feedback.target_id
+                 GROUP BY counsellor.coun_id
+                 ORDER BY avg_score DESC
+            `);
+
+            // Send data to the client
+            res.json(counsellors);
+
+        } else {
+            // Unauthorized
+            res.status(401).json({ msg: "仅限管理员访问！！" });
+        }
+
+} catch (err) {
+    // Catch errors
+    throw err;
+}
+});
+
+// @route   GET /admin/recordNumRecent
+// @desc    最近7天的咨询数量
+// @access  Private
+router.get("/recordNumRecent", [
+    check("user_id", "user_id is required").notEmpty(), // Check the user_id
+],
+async(req, res) => {
+
+try {
+    // Check for errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    let user_id = req.query.user_id;
+
+    // Check if user exists
+    const [rows] = await promisePool.query(
+        `SELECT role from login WHERE user_id = '${user_id}'`
+    );
+
+        // Extract role from rows
+        const role = rows[0].role;
+
+        if (role == "admin") { // Check if the user is admin
+            // Get all students from the DB
+            const [recentRank] = await promisePool.query(
+                `SELECT DATE_FORMAT(recent_7days.end_time, '%Y-%m-%d' ) days,
+                        COUNT(*) record_num 
+                 FROM (
+                    SELECT * FROM record
+                    WHERE DATE_SUB( CURDATE(), INTERVAL 6 DAY ) <= record.end_time) AS recent_7days
+                 GROUP BY days
+                `);
+
+            // Send data to the client
+            res.json(recentRank);
+
+        } else {
+            // Unauthorized
+            res.status(401).json({ msg: "仅限管理员访问！！" });
+        }
+
+} catch (err) {
+    // Catch errors
+    throw err;
+}
+});
+
+// @route   GET /admin/TodayCounOnDuty
+// @desc    当天排班咨询师人数
+// @access  Private
+
+router.get("/TodayCounOnDuty", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = rows[0].role;
+            if(role == "admin"){
+                const [result] = await promisePool.query(
+                    `SELECT schedule.date, COUNT(schedule.user_id) AS coun_num
+                     FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                     WHERE login.role = "counsellor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT(CURDATE(),'%Y%m'))
+                     GROUP BY schedule.date`
+                );
+                    // Send success message to the client
+                    res.json(result);
+            } else {
+                return res.status(401).json({ msg: "仅限管理员访问！！" });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /admin/TodaySupOnDuty
+// @desc    当天排班督导人数
+// @access  Private
+
+router.get("/TodaySupOnDuty", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = rows[0].role;
+            if(role == "admin"){
+                const [result] = await promisePool.query(
+                    `SELECT schedule.date, COUNT(schedule.user_id) AS sup_num
+                     FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                     WHERE login.role = "supervisor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT(CURDATE(),'%Y%m'))
+                     GROUP BY schedule.date`
+                );
+                    // Send success message to the client
+                    res.json(result);
+            } else {
+                return res.status(401).json({ msg: "仅限管理员访问！！" });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
 
 module.exports = router;
