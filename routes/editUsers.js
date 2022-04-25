@@ -72,10 +72,22 @@ router.put(
                 return res.status(400).json({ msg: "Gender is not valid" });
             }
 
-              // Check admin_name
+            // Check admin_name
             var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
             if(!reg_name.test(admin_name)){
                 return res.status(400).json({ msg: "Please enter vaild admin_Name."});
+            }
+
+            // Check user_name
+            var reg_userN = /^[a-zA-Z_]+$/;
+            if(!reg_userN.test(user_name)){
+                return res.status(400).json({ msg: "Please enter vaild user_Name."});
+            }
+
+            // Check phone
+            var reg_ph = /^1[0-9]{10}/;
+            if(!reg_ph.test(admin_phone)){
+                return res.status(400).json({ msg: "PhoneNumber is not valid." });
             }
 
             // Check if user exists
@@ -197,6 +209,12 @@ router.put(
             var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
             if(!reg_name.test(coun_name)){
                 return res.status(400).json({ msg: "Please enter vaild admin_Name."});
+            }
+
+            // Check user_name
+            var reg_userN = /^[a-zA-Z_]+$/;
+            if(!reg_userN.test(user_name)){
+                return res.status(400).json({ msg: "Please enter vaild user_Name."});
             }
 
             // Check if user exists
@@ -334,6 +352,12 @@ router.put(
             var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
             if(!reg_name.test(sup_name)){
                 return res.status(400).json({ msg: "Please enter vaild admin_Name."});
+            }
+            
+            // Check user_name
+            var reg_userN = /^[a-zA-Z_]+$/;
+            if(!reg_userN.test(user_name)){
+            return res.status(400).json({ msg: "Please enter vaild user_Name."});
             }
 
             // Check if user exists
