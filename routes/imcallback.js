@@ -28,22 +28,19 @@ router.post(
         let to_user = req.body.To_Account;
         let msg_time = req.body.MsgTime;
         let msg_key = req.body.MsgKey;
-        let msg_body = req.body.MsgBody;
+        let msg_body = req.body.MsgBody[0];
         let text = "消息";
 
-        let msg_type = msg_body[0].MsgType;
+        let msg_type = msg_body.MsgType;
         if (msg_type == "TIMTextElem"){
-            text = msg_body[0].Text;
-        } else if (msg_type[0] == "TIMFaceElem") {
+            text = msg_body.MsgContent.Text;
+        } else if (msg_type == "TIMFaceElem") {
             text = "[表情]";
         } else if (msg_type == "TIMSoundElem") {
             text = "[语音]";
         } else if (msg_type == "TIMImageElem") {
             text = "[图片]";
-        } else {
-
         }
-
 
         try {
 
