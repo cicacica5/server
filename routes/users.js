@@ -209,6 +209,7 @@ router.post(
       if(!reg_name.test(coun_name)){
         return res.status(400).json({ msg: "Please enter vaild coun_Name."});
       }
+      
       // Check user_name
       var reg_userN = /^[a-zA-Z_]+$/;
       if(!reg_userN.test(user_name)){

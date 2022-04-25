@@ -20,6 +20,9 @@ const router = express.Router();
  * 最近7天的咨询数量
  * 当天排班咨询师人数
  * 当天排班督导人数
+ * 当天咨询次数
+ * 当天咨询总时长
+ * 当日咨询数量变化（每4小时）
  */
 
 // @route   GET /admin/counsellorList
@@ -488,12 +491,13 @@ try {
 // @route   GET /admin/recordNumRecent
 // @desc    最近7天的咨询数量
 // @access  Private
-router.get("/recordNumRecent", [
-    check("user_id", "user_id is required").notEmpty(), // Check the user_id
-],
-async(req, res) => {
+router.get(
+    "/recordNumRecent", [
+    check("user_id", "user_id is required").notEmpty(), // Check the user_i
+    ],
+    async(req, res) => {
 
-try {
+    try {
     // Check for errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -512,7 +516,6 @@ try {
         const role = rows[0].role;
 
         if (role == "admin") { // Check if the user is admin
-            // Get all students from the DB
             const [recentRank] = await promisePool.query(
                 `SELECT DATE_FORMAT(recent_7days.end_time, '%Y-%m-%d' ) days,
                         COUNT(*) record_num 
@@ -609,6 +612,174 @@ router.get("/TodaySupOnDuty", [
             } else {
                 return res.status(401).json({ msg: "仅限管理员访问！！" });
             }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /admin/todayNum
+// @desc    当天咨询次数
+// @access  Public
+
+router.get(
+    "/todayNum", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        // Check user_id
+        let user_id = req.query.user_id;
+        const [rows] = await promisePool.query(
+            `SELECT EXISTS(SELECT * from login WHERE user_id = "${user_id}" ) "EXISTS" FROM dual`
+        );
+        const result = rows[0].EXISTS;
+        if (result) {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = user_role[0].role;
+            if(role != "admin"){
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } else {
+            return res.status(401).json({ msg: "User not exists." });
+        }
+
+        try {
+            const [result] = await promisePool.query(
+                `SELECT CURRENT_DATE() AS today, COUNT(DateDiff(record.begin_time,CURRENT_DATE())=0 or null) AS today_num
+                 FROM record
+                 `
+                );
+            // Send success message to the client
+            res.send(result);
+
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /admin/todayTime
+// @desc    当天咨询时长
+// @access  Public
+
+router.get(
+    "/todayTime", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        // Check user_id
+        let user_id = req.query.user_id;
+        const [rows] = await promisePool.query(
+            `SELECT EXISTS(SELECT * from login WHERE user_id = "${user_id}" ) "EXISTS" FROM dual`
+        );
+        const result = rows[0].EXISTS;
+        if (result) {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = user_role[0].role;
+            if(role != "admin"){
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } else {
+            return res.status(401).json({ msg: "User not exists." });
+        }
+        
+        try {
+
+
+            const [result] = await promisePool.query(
+                `SELECT CURRENT_DATE() AS today,
+                        ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))/60) AS today_time
+                 FROM record
+                `
+                );
+            // Send success message to the client
+            res.send(result);
+
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /admin/recordNumToday
+// @desc    当日咨询数量变化（每4小时）
+// @access  Private
+router.get(
+    "/recordNumToday", [
+    check("user_id", "user_id is required").notEmpty(), // Check the user_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+        // Return the errors
+        return res.status(400).json({ errors: errors.array() });
+        }
+
+        // Check user_id
+        let user_id = req.query.user_id;
+        const [rows] = await promisePool.query(
+            `SELECT EXISTS(SELECT * from login WHERE user_id = "${user_id}" ) "EXISTS" FROM dual`
+        );
+        const result = rows[0].EXISTS;
+        if (result) {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = user_role[0].role;
+            if(role != "admin"){
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } else {
+            return res.status(401).json({ msg: "User not exists." });
+        }
+
+        try {
+            var results = new Array();
+            for(let hourGroup = 0; hourGroup < 6; hourGroup++){
+                const [recentRank] = await promisePool.query(
+                    `SELECT CURRENT_DATE AS today,
+                            COUNT(HOUR(todayRecord.begin_time) >= ${hourGroup}*4 AND 
+                                  HOUR(todayRecord.begin_time) < (${hourGroup}+1)*4 OR NULL) AS Num
+                     FROM ( SELECT * FROM record
+                            WHERE DateDiff(record.begin_time,CURRENT_DATE())=0) AS todayRecord
+                    `);
+                const count = recentRank[0].Num;
+
+                // Create user object
+                let result = {
+                    hourGroup,
+                    count,
+                };
+
+                results[hourGroup] = result;
+                console.log(results);
+            }
+
+            // Send success message to the client
+            res.send(results);
+        
         } catch (err) {
             // Catch errors
             throw err;
