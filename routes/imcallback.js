@@ -40,6 +40,8 @@ router.post(
             text = "[语音]";
         } else if (msg_type == "TIMImageElem") {
             text = "[图片]";
+        } else if (msg_type == "TIMRelayElem") {
+            text = "[合并聊天记录]";
         }
 
         try {
