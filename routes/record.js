@@ -8,7 +8,7 @@ const router = express.Router();
 
 // Endpoints
 /**
- * 创建咨询记录
+ * 访客创建咨询记录
  * 获取某个咨询师的咨询记录列表
  * 获取督导及其绑定的咨询师的咨询记录列表
  * 获取所有人的咨询记录列表
@@ -19,14 +19,13 @@ const router = express.Router();
  */
 
 // @route   POST /record
-// @desc    创建咨询记录
+// @desc    访客创建咨询记录
 // @access  Public
 
 router.post(
     "/", [
         check("visitor_id", "visitor_id is required").notEmpty(), // Check the visitor_id
         check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
-        check("help_or_not", "Tell if the counsellor asked for help or not").notEmpty(),
     ],
     async(req, res) => {
         // Check for errors
@@ -40,31 +39,37 @@ router.post(
             let {
                 visitor_id,
                 coun_id,
-                sup_id,
-                help_or_not,
                 begin_time,
-                end_time,
             } = req.body;
 
             try {
+                // Add record in the DB
+                await promisePool.query(
+                    `INSERT INTO record (visitor_id, coun_id, begin_time) VALUES ("${visitor_id}", "${coun_id}", "${begin_time}")`
+                );
 
-                if (!help_or_not) {
-                    // Add record in the DB
-                    await promisePool.query(
-                        `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time, period) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", "${sup_id}", "${begin_time}", "${end_time}", timestampdiff(second, "${begin_time}", "${end_time}"))`
-                    );
+                // Check if user exists
+                const [rows] = await promisePool.query(
+                    `SELECT conversation_num from counsellor WHERE coun_id = '${coun_id}'`
+                );
 
-                    // Send success message to the client
-                    res.send("Record created");
-                } else {
-                    // Add record in the DB
-                    await promisePool.query(
-                        `INSERT INTO record (visitor_id, coun_id, help_or_not, sup_id, begin_time, end_time, period) VALUES ("${visitor_id}", "${coun_id}", "${help_or_not}", "${sup_id}", "${begin_time}", "${end_time}", timestampdiff(second, "${begin_time}", "${end_time}"))`
-                    );
+                // Extract role from rows
+                let num = rows[0].conversation_num;
 
-                    // Send success message to the client
-                    res.send("Record created");
-                }
+                num = num + 1;
+
+                await promisePool.query(
+                    `UPDATE counsellor SET conversation_num = '${num}'`
+                );
+
+                const [id] = await promisePool.query(
+                    `SELECT record_id from record where visitor_id = '${visitor_id}' and coun_id = '${coun_id}' order by begin_time desc limit 1`
+                );
+
+                let record_id = id[0].record_id;
+
+                res.json( {record_id : record_id});
+
             } catch (err) {
                 // Catch errors
                 throw err;
