@@ -33,6 +33,7 @@ app.use("/admin", require("./routes/admin"));
 app.use("/wx-users", require("./routes/wx-users"));
 app.use("/counsellor", require("./routes/counsellor"));
 app.use("/supervisor", require("./routes/supervisor"));
+app.use("/imcallback", require("./routes/imcallback"));
 //app.use("/visitor", require("./routes/visitor"));
 
 // catch 404 and forward to error handler

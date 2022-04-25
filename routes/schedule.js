@@ -12,6 +12,9 @@ const router = express.Router();
  * 获取某天值班的咨询师列表
  * 获取某天值班的督导列表
  * 获取排班表
+ * 批量排班
+ * 删除某天排班
+ * 批量删除排班
  */
 
 // @route   POST /schedule/daily
@@ -320,7 +323,7 @@ router.delete(
         try {
             for (let i = 0; i < date.length; i++) {
                 let date_i = date[i];
-                
+
                 // Check if schedule exists
                 let [rows] = await promisePool.query(
                     `SELECT EXISTS(SELECT * from schedule WHERE user_id = "${user_id}" and date = "${date_i}") "EXISTS" FROM dual`
