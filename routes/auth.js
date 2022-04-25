@@ -210,6 +210,21 @@ router.post(
 
                     // Extract role from rows
                     const role = rows[0].role;
+                    if(role == "counsellor"){
+                        const [coun] = await promisePool.query(
+                            `SELECT coun_status from counsellor WHERE coun_id = '${user_id}'`
+                        );
+                        let status = coun[0].coun_status;
+                        if(status == "banned")
+                            return res.status(400).json({ msg: "User is Logged off." });
+                    } else if(role == "supervisor"){
+                        const [sup] = await promisePool.query(
+                            `SELECT sup_status from supervisor WHERE sup_id = '${user_id}'`
+                        );
+                        let status = sup[0].sup_status;
+                        if(status == "banned")
+                            return res.status(400).json({ msg: "User is Logged off." });
+                    }
 
                     // Create a token
                     const token = jwt.sign(payload, config.get("jwtSecret"), { expiresIn: 21600, });
