@@ -77,11 +77,11 @@ router.post(
     }
 );
 
-// @route   POST /recordComplete
+// @route   POST /record/complete
 // @desc    咨询师补全咨询记录
 // @access  Public
 router.post(
-    "/", [
+    "/complete", [
         check("record_id", "record_id is required").notEmpty(), // Check the record_id
     ],
     async(req, res) => {
