@@ -29,6 +29,7 @@ router.post(
         let msg_time = req.body.MsgTime;
         let msg_key = req.body.MsgKey;
         let msg_body = req.body.MsgBody[0];
+        let record_id = req.body.CloudCustomData;
         let text = "消息";
 
         let msg_type = msg_body.MsgType;
@@ -43,7 +44,7 @@ router.post(
         } else if (msg_type == "TIMRelayElem") {
             text = "[合并聊天记录]";
         } else if (msg_type == "TIMCustomElem") {
-            text = "[对咨询师进行评价]";
+            text = "[访客给出评价]";
         }
 
         function checkTime(i) {
@@ -69,7 +70,7 @@ router.post(
 
             // Add bind in the DB
             await promisePool.query(
-                `INSERT INTO message (msg_key, from_user, to_user, msg_time, msg_type, text) VALUES ("${msg_key}", "${from_user}", "${to_user}", "${msg_timeStamp}", "${msg_type}", "${text}")`
+                `INSERT INTO message (msg_key, from_user, to_user, msg_time, msg_type, text, record_id) VALUES ("${msg_key}", "${from_user}", "${to_user}", "${msg_timeStamp}", "${msg_type}", "${text}", "${record_id}")`
             );
 
             res.json({ActionStatus:"OK", ErrorInfo:"", ErrorCode:0});

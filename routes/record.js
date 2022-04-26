@@ -19,6 +19,7 @@ const router = express.Router();
  * 获取咨询师或督导的今日咨询时长
  * 获取咨询师或督导的累计咨询数
  * 获取最近n个咨询/求助记录
+ * 查看/导出咨询记录
  */
 
 // @route   POST /record
@@ -194,7 +195,7 @@ router.post(
                     i = "0" + i
                 }
                 return i;
-            }            
+            }
             let newBegin_time = begin_time.getFullYear() + '-' +
                         checkTime(begin_time.getMonth() + 1) + '-' +
                         checkTime(begin_time.getDate()) + ' ' +
@@ -372,10 +373,36 @@ router.get(
         }
 
         // Extract info from the body
-        let visitor_id = req.query.visitor_id;
-        let coun_id = req.query.coun_id;
+        let visitor = req.query.visitor;
+        let coun = req.query.coun;
+        let visitor_id = 0;
+        let coun_id = 0;
 
         try {
+
+            const [v_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${visitor}'`
+            );
+
+            let v_role = v_id[0].role;
+
+            if(v_role == "visitor")  {
+                visitor_id = v_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "visitor不是访客的user_name！！" });
+            }
+
+            const [c_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${coun}'`
+            );
+
+            let c_role = c_id[0].role;
+
+            if(c_role == "counsellor")  {
+                coun_id = c_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "coun不是咨询师的user_name！！" });
+            }
 
             const [id] = await promisePool.query(
                 `SELECT record_id from record where visitor_id = '${visitor_id}' and coun_id = '${coun_id}'
@@ -745,4 +772,58 @@ router.get(
         }
     }
 );
+
+// @route   GET /record/content
+// @desc    查看/导出咨询记录
+// @access  Public
+
+router.get(
+    "/content", [
+        check("record_id", "record_id is required.").notEmpty(), // check record_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({errors: errors.array()});
+        }
+
+        const record_id = req.query.record_id;
+/*
+        const [message] = await promisePool.query(
+            `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}'`
+                `SELECT * FROM (SELECT record_id, visitor_id, coun_id, uname, begin_time, period, Round(AVG(score),2) AS score
+       FROM (SELECT record_id, visitor_id, coun_id, user_name AS uname, begin_time, period, score
+             FROM feedback FULL JOIN record ON user_id = visitor_id AND target_id = coun_id
+                           LEFT JOIN login ON coun_id = login.user_id
+             GROUP BY record_id DESC) AS result
+             WHERE visitor_id = (SELECT user_id FROM login where user_name = '${user_name}')
+             GROUP BY coun_id) AS result2 LEFT JOIN counsellor ON result2.coun_id = counsellor.coun_id
+       GROUP BY record_id`
+        );
+
+        for (let i = 0; i < message.length; i++) {
+            let sup_id = sups[i];
+            // Check if bind exists
+            let [rows] = await promisePool.query(
+                `SELECT EXISTS(SELECT * from bind WHERE coun_id = "${coun_id}" and sup_id = "${sup_id}") "EXISTS" FROM dual`
+            );
+            let result = rows[0].EXISTS;
+
+            if (result) {
+                // Bind already exists
+                return res.status(400).json({ msg: "Bind already exists" });
+            } else {
+
+                // Add bind in the DB
+                await promisePool.query(
+                    `INSERT INTO bind (coun_id, sup_id) VALUES ("${coun_id}", "${sup_id}")`
+                );
+            }
+        }
+*/
+    }
+);
+
 module.exports = router;
