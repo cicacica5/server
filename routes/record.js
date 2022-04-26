@@ -83,11 +83,7 @@ router.post(
 // @desc    咨询师补全咨询记录
 // @access  Public
 router.post(
-    "/complete", [
-        check("visitor_id", "visitor_id is required").notEmpty(), // Check the visitor_id
-        check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
-        check("sup_id", "sup_id is required").notEmpty(), // Check the sup_id
-    ],
+    "/complete",
     async(req, res) => {
         // Check for errors
         const errors = validationResult(req);
@@ -98,14 +94,59 @@ router.post(
 
         // Extract info from the body
         let {
-            visitor_id,
-            coun_id,
+            visitor,
+            coun,
             help_or_not,
-            sup_id,
+            sup,
             end_time,
         } = req.body;
 
+        let visitor_id = 0;
+        let coun_id = 0;
+        let sup_id = 0;
+        let sup_num = 0;
+        let coun_num = 0;
+
         try {
+            const [v_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${visitor}'`
+            );
+
+            let v_role = v_id[0].role;
+
+            if(v_role == "visitor")  {
+                visitor_id = v_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "visitor不是访客的user_name！！" });
+            }
+
+            const [c_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${coun}'`
+            );
+
+            let c_role = c_id[0].role;
+
+            if(c_role == "counsellor")  {
+                coun_id = c_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "coun不是咨询师的user_name！！" });
+            }
+
+            if (sup == "无"){
+                sup_id = -1;
+            } else {
+                const [s_id] = await promisePool.query(
+                    `SELECT user_id, role from login where user_name = '${sup}'`
+                );
+
+                let s_role = s_id[0].role;
+
+                if (s_role == "supervisor") {
+                    sup_id = s_id[0].user_id;
+                } else {
+                    return res.status(401).json({msg: "sup不是督导的user_name！！"});
+                }
+            }
 
             const [id] = await promisePool.query(
                 `SELECT record_id from record where visitor_id = '${visitor_id}' and coun_id = '${coun_id}' order by begin_time desc limit 1`
@@ -134,12 +175,12 @@ router.post(
             );
 
             // Extract role from rows
-            let num = rows[0].conversation_num;
+            coun_num = rows[0].conversation_num;
 
-            num = num - 1;
+            coun_num = coun_num - 1;
 
             await promisePool.query(
-                `UPDATE counsellor SET conversation_num = '${num}' where coun_id = '${coun_id}'`
+                `UPDATE counsellor SET conversation_num = '${coun_num}' where coun_id = '${coun_id}'`
             );
 
             if(help_or_not = 1) {
@@ -148,12 +189,12 @@ router.post(
                 );
 
                 // Extract role from rows
-                let num = rows[0].conversation_num;
+                sup_num = rows[0].conversation_num;
 
-                num = num - 1;
+                sup_num = sup_num - 1;
 
                 await promisePool.query(
-                    `UPDATE supervisor SET conversation_num = '${num}' where sup_id = '${sup_id}'`
+                    `UPDATE supervisor SET conversation_num = '${sup_num}' where sup_id = '${sup_id}'`
                 );
             } else {
                 const [rows] = await promisePool.query(
@@ -161,12 +202,10 @@ router.post(
                 );
 
                 // Extract role from rows
-                let num = rows[0].conversation_num;
-
-                num = num;
+                sup_num = rows[0].conversation_num;
 
                 await promisePool.query(
-                    `UPDATE supervisor SET conversation_num = '${num}' where sup_id = '${sup_id}'`
+                    `UPDATE supervisor SET conversation_num = '${sup_num}' where sup_id = '${sup_id}'`
                 );
             }
 
@@ -186,11 +225,7 @@ router.post(
 // @desc    开启求助督导会话
 // @access  Public
 router.post(
-    "/help", [
-        check("visitor_id", "visitor_id is required").notEmpty(), // Check the visitor_id
-        check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
-        check("sup_id", "sup_id is required").notEmpty(), // Check the sup_id
-    ],
+    "/help",
     async(req, res) => {
         // Check for errors
         const errors = validationResult(req);
@@ -201,14 +236,53 @@ router.post(
 
         // Extract info from the body
         let {
-            visitor_id,
-            coun_id,
-            sup_id,
+            visitor,
+            coun,
+            sup,
         } = req.body;
 
         let help_or_not = 1;
+        let visitor_id = 0;
+        let coun_id = 0;
+        let sup_id = 0;
 
         try {
+            const [v_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${visitor}'`
+            );
+
+            let v_role = v_id[0].role;
+
+            if(v_role == "visitor")  {
+                visitor_id = v_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "visitor不是访客的user_name！！" });
+            }
+
+            const [c_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${coun}'`
+            );
+
+            let c_role = c_id[0].role;
+
+            if(c_role == "counsellor")  {
+                coun_id = c_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "coun不是咨询师的user_name！！" });
+            }
+
+            const [s_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${sup}'`
+            );
+
+            let s_role = s_id[0].role;
+
+            if(s_role == "supervisor")  {
+                sup_id = s_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "sup不是督导的user_name！！" });
+            }
+
             const [id] = await promisePool.query(
                 `SELECT record_id from record where visitor_id = '${visitor_id}' and coun_id = '${coun_id}' order by begin_time desc limit 1`
             );
