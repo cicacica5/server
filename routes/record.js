@@ -438,10 +438,12 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, ROUND(period/60) AS period FROM record
-                                                                                                                                                      INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
-                                                                                                                                                      LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
-                                                                                                                                                      INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
+                ` SELECT record_id, visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time,
+                         period, score, vis_to_coun_comment, coun_to_vis_comment
+                  FROM record JOIN feed ON record.record_id = feed.feed_id
+                              INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
+                              LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
+                              INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
                   WHERE record.coun_id = "${coun_id}"`
             );
             const result = rows[0];
@@ -482,13 +484,15 @@ router.get(
             // Check if record exists
             const [rows] = await promisePool.query(
                 `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
-                                          counsellor.coun_id, counsellor.coun_name,
+                        counsellor.coun_id, counsellor.coun_name,
                         record.help_or_not, supervisor.sup_id, supervisor.sup_name,
-                        record.begin_time, record.end_time, record.content, ROUND(record.period/60) AS period
+                        record.begin_time, record.end_time, record.period,
+                        vis_to_coun_comment, coun_to_vis_comment
                  FROM record JOIN bind ON record.sup_id = bind.sup_id AND record.coun_id = bind.coun_id
-                             INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
-                             INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
-                             INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
+                             LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
+                             LEFT JOIN counsellor ON record.coun_id = counsellor.coun_id
+                             LEFT JOIN visitor ON record.visitor_id = visitor.visitor_id
+                             JOIN feed ON record.record_id = feed.feed_id
                  WHERE record.sup_id = ${sid} AND bind.sup_id = ${sid}`
             );
             const row = rows[0];
@@ -520,10 +524,14 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                ` SELECT visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, content, ROUND(period/60) AS period FROM record
-                                                                                                                                                      INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
-                                                                                                                                                      LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
-                                                                                                                                                      INNER JOIN counsellor ON record.coun_id = counsellor.coun_id`
+                `SELECT record_id, visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, period,
+                        vis_to_coun_comment, coun_to_vis_comment
+                 FROM record INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
+                             INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                             INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
+                             JOIN feed ON record.record_id = feed.feed_id
+                 ORDER BY record_id DESC
+                `
             );
             const result = rows[0];
 
@@ -733,12 +741,14 @@ router.get(
                     `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
                                               counsellor.coun_id, counsellor.coun_name,
                             record.help_or_not,supervisor.sup_id, supervisor.sup_name,
-                            record.begin_time, record.end_time, record.content, ROUND(record.period/60) AS period
+                            record.begin_time, record.end_time, record.period,
+                            score, vis_to_coun_comment, coun_to_vis_comment
                      FROM record LEFT JOIN visitor ON record.visitor_id = visitor.visitor_id
-                                 INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
-                                 INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                                 LEFT JOIN counsellor ON record.coun_id = counsellor.coun_id
+                                 LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
+                                 JOIN feed ON record.record_id = feed.feed_id
                      WHERE record.coun_id = ${user_id}
-                     ORDER BY record.end_time DESC
+                     ORDER BY record.begin_time DESC
                      LIMIT ${n}`
                 );
                     // Send success message to the client
@@ -748,12 +758,13 @@ router.get(
                     `SELECT record.record_id, visitor.visitor_id, visitor.visitor_name,
                                               counsellor.coun_id, counsellor.coun_name,
                             record.help_or_not,supervisor.sup_id, supervisor.sup_name,
-                            record.begin_time, record.end_time, record.content, ROUND(record.period/60) AS period
+                            record.begin_time, record.end_time, record.period
                      FROM record LEFT JOIN visitor ON record.visitor_id = visitor.visitor_id
-                                 INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
-                                 INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
+                                 LEFT JOIN counsellor ON record.coun_id = counsellor.coun_id
+                                 LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
+                                 JOIN feed ON record.record_id = feed.feed_id
                      WHERE record.sup_id = ${user_id}
-                     ORDER BY record.end_time DESC
+                     ORDER BY record.begin_time DESC
                      LIMIT ${n}`
                 );
                     // Send success message to the client
