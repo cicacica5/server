@@ -411,15 +411,16 @@ router.get(
 
     const [rows] = await promisePool.query(
       // `SELECT record.record_id, record.coun_id, counsellor.coun_name, counsellor.coun_status, record.begin_time, record.end_time, record.period, feedback.score FROM record JOIN login JOIN counsellor JOIN feedback WHERE login.user_name = "${user_name}" AND record.visitor_id = login.user_id AND record.coun_id = counsellor.coun_id AND record.record_id = feedback.record_id AND record.visitor_id = feedback.user_id`
-      `SELECT * FROM (SELECT record_id, visitor_id, coun_id, uname, begin_time, period, Round(AVG(score),2) AS score
-       FROM (SELECT record_id, visitor_id, coun_id, user_name AS uname, begin_time, period, score
-             FROM feedback FULL JOIN record ON user_id = visitor_id AND target_id = coun_id
-                           LEFT JOIN login ON coun_id = login.user_id
-             GROUP BY record_id DESC) AS result
-             WHERE visitor_id = (SELECT user_id FROM login where user_name = '${user_name}')
-             GROUP BY coun_id) AS result2 LEFT JOIN counsellor ON result2.coun_id = counsellor.coun_id
-       GROUP BY record_id`
-    );
+      `SELECT record_id, record.visitor_id, visitor.visitor_name, record.coun_id, counsellor.coun_name, login.user_name AS uname,
+              begin_time, end_time, period, score, vis_to_coun_comment, coun_to_vis_comment,
+              coun_gender, coun_phone, coun_status, coun_avatar
+       FROM record JOIN feed ON record.record_id = feed.feed_id
+                   INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
+                   LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
+                   INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
+                   LEFT JOIN login ON login.user_id = record.coun_id
+       WHERE record.visitor_id = (SELECT user_id FROM login WHERE user_name = "${user_name}")
+      `);
 
     try {
       // Check if record exists
