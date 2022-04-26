@@ -43,7 +43,7 @@ router.post(
         } else if (msg_type == "TIMRelayElem") {
             text = "[合并聊天记录]";
         } else if (msg_type == "TIMCustomElem") {
-            text = "[对咨询师进行评价]";
+            text = "[访客给出评价]";
         }
 
         function checkTime(i) {
