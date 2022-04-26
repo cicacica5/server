@@ -114,9 +114,27 @@ router.post(
             let begin_time = row[0].begin_time;
             let coun_id = row[0].coun_id;
 
+
+            /**
+             * 时间处理
+             * 如果时间小于10 ，则再前面加一个'0'
+             * */
+             function checkTime(i) {
+                if (i < 10) {
+                    i = "0" + i
+                }
+                return i;
+            }            
+            let newBegin_time = begin_time.getFullYear() + '-' +
+                        checkTime(begin_time.getMonth() + 1) + '-' +
+                        checkTime(begin_time.getDate()) + ' ' +
+                        checkTime(begin_time.getHours()) + ':' +
+                        checkTime(begin_time.getMinutes()) + ':' +
+                        checkTime(begin_time.getSeconds());
+
             // Add record in the DB
             await promisePool.query(
-                `UPDATE record SET period = timestampdiff(second, "${begin_time}", "${end_time}") where record_id = '${record_id}'`
+                `UPDATE record SET period = timestampdiff(second, "${newBegin_time}", "${end_time}") where record_id = '${record_id}'`
             );
 
             const [rows] = await promisePool.query(
