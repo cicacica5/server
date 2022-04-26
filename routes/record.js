@@ -46,12 +46,8 @@ router.post(
                 begin_time,
             } = req.body;
 
-            console.log(begin_time);
-            console.log(new Date(begin_time).toString());
             let tmp = new Date(begin_time);
 
-            //let begin_timestamp = dateFormat("YYYY-mm-dd HH:MM", begin_time);
-            //console.log(begin_timestamp);
             function checkTime(i) {
                 if (i < 10) {
                     i = "0" + i
@@ -195,7 +191,7 @@ router.post(
                     i = "0" + i
                 }
                 return i;
-            }
+            }            
             let newBegin_time = begin_time.getFullYear() + '-' +
                         checkTime(begin_time.getMonth() + 1) + '-' +
                         checkTime(begin_time.getDate()) + ' ' +
@@ -361,9 +357,9 @@ router.post(
 // @access  Public
 router.get(
     "/recordID", [
-            check("visitor_id", "visitor_id is required").notEmpty(), // Check the visitor_id
-            check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
-        ],
+        check("visitor", "visitor is required").notEmpty(), // Check the visitor_id
+        check("coun", "coun is required").notEmpty(), // Check the coun_id
+    ],
     async(req, res) => {
         // Check for errors
         const errors = validationResult(req);
@@ -379,9 +375,8 @@ router.get(
         let coun_id = 0;
 
         try {
-
             const [v_id] = await promisePool.query(
-                `SELECT user_id, role from login where user_name = '${visitor}'`
+            `SELECT user_id, role from login where user_name = '${visitor}'`
             );
 
             let v_role = v_id[0].role;
