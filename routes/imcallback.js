@@ -42,6 +42,8 @@ router.post(
             text = "[图片]";
         } else if (msg_type == "TIMRelayElem") {
             text = "[合并聊天记录]";
+        } else if (msg_type == "TIMCustomElem") {
+            text = "[对咨询师进行评价]";
         }
 
         function checkTime(i) {
@@ -49,7 +51,7 @@ router.post(
                 i = "0" + i
             }
             return i;
-        } 
+        }
         // let msg_ts = new Date(msg_time * 1000);
         // let ts= msg_ts.toLocaleString();
         // let msg_timestamp =  ts.replace(/\//g,"-");
