@@ -65,7 +65,7 @@ router.get("/counsellorList", [
                             counsellor.coun_email,
                             counsellor.coun_company,
                             counsellor.coun_title,
-                            avg(score) AS score,
+                            ROUND(AVG(score),2) AS score,
                             SUM(period) AS total_time,
                             COUNT(record_id or null) as total_num
                      FROM counsellor RIGHT JOIN feed ON counsellor.coun_id = feed.coun_id
@@ -130,11 +130,13 @@ router.get("/supervisorList", [
                                                                       supervisor.sup_qualification,
                                                                       supervisor.sup_quaNumber,
                                                                       SUM(period) as total_time,
-                                                                      COUNT(record_id) as total_num,
+                                                                      COUNT(record_id or null) as total_num
                                                                FROM supervisor
                                                                         LEFT JOIN record ON supervisor.sup_id = record.sup_id
                                                                         LEFT JOIN login ON supervisor.sup_id = login.user_id
-                                                               GROUP BY supervisor.sup_id`);
+                                                               GROUP BY supervisor.sup_id
+                                                               HAVING supervisor.sup_id <> -1
+                                                               `);
 
                 // Send data to the client
                 res.json(supervisors);
@@ -281,26 +283,26 @@ try {
 
         if (role == "admin") { // Check if the user is admin
             // Get all online Counsellor List
-            const [counsellors] = await promisePool.query(`SELECT counsellor.coun_id,
-                                                                  counsellor.coun_name,
-                                                                  counsellor.coun_gender,
-                                                                  counsellor.coun_phone,
-                                                                  counsellor.coun_status,
-                                                                  counsellor.coun_age,
-                                                                  counsellor.coun_identity,
-                                                                  counsellor.coun_email,
-                                                                  counsellor.coun_company,
-                                                                  counsellor.coun_title,
-                                                                  avg(score) as score,
-                                                                  SUM(period) as total_time,
-                                                                  COUNT(record_id) as total_num,
-                                                                  login.user_name
-                                                           FROM counsellor
-                                                                    LEFT JOIN feedback ON counsellor.coun_id = feedback.target_id
-                                                                    LEFT JOIN record ON counsellor.coun_id = record.coun_id
-                                                                    LEFT JOIN login ON counsellor.coun_id = login.user_id
-                                                           WHERE counsellor.coun_status = "free" OR counsellor.coun_status = "busy" 
-                                                           GROUP BY counsellor.coun_id
+            const [counsellors] = await promisePool.query(
+                `SELECT counsellor.coun_id,
+                        counsellor.coun_name,
+                        login.user_name,
+                        counsellor.coun_gender,
+                        counsellor.coun_phone,
+                        counsellor.coun_status,
+                        counsellor.coun_age,
+                        counsellor.coun_identity,
+                        counsellor.coun_email,
+                        counsellor.coun_company,
+                        counsellor.coun_title,
+                        ROUND(AVG(score),2) as score,
+                        SUM(period) as total_time,
+                        COUNT(record_id or null) as total_num
+                 FROM counsellor RIGHT JOIN feed ON counsellor.coun_id = feed.coun_id
+                                 LEFT JOIN record ON counsellor.coun_id = record.coun_id AND feed_id = record_id
+                                 LEFT JOIN login ON counsellor.coun_id = login.user_id
+                 WHERE counsellor.coun_status = "free" OR counsellor.coun_status = "busy" 
+                 GROUP BY counsellor.coun_id
             `);
 
             // Send data to the client
@@ -347,6 +349,7 @@ try {
             // Get all online Counsellor List
             const [supervisors] = await promisePool.query(`SELECT supervisor.sup_id,
                                                                   supervisor.sup_name,
+                                                                  login.user_name,
                                                                   supervisor.sup_gender,
                                                                   supervisor.sup_phone,
                                                                   supervisor.sup_status,
@@ -358,14 +361,14 @@ try {
                                                                   supervisor.sup_qualification,
                                                                   supervisor.sup_quaNumber,
                                                                   SUM(period) as total_time,
-                                                                  COUNT(record_id) as total_num,
-                                                                  login.user_name
+                                                                  COUNT(record_id or null) as total_num
                                                            FROM supervisor
                                                                     LEFT JOIN record ON supervisor.sup_id = record.sup_id
                                                                     LEFT JOIN login ON supervisor.sup_id = login.user_id
                                                            WHERE (supervisor.sup_status = "free" OR supervisor.sup_status = "busy") AND supervisor.sup_id != -1
                                                            GROUP BY supervisor.sup_id
-            `);
+                                                           HAVING supervisor.sup_id <>1
+                                                           `);
 
             // Send data to the client
             res.json(supervisors);
@@ -473,8 +476,8 @@ try {
                         counsellor.coun_age,
                         counsellor.coun_company,
                         counsellor.coun_title,
-                        ROUND(avg(feedback.score),2) as avg_score
-                 FROM counsellor LEFT JOIN feedback ON counsellor.coun_id = feedback.target_id
+                        ROUND(avg(feed.score),2) as avg_score
+                 FROM counsellor LEFT JOIN feed ON counsellor.coun_id = feed.coun_id
                  GROUP BY counsellor.coun_id
                  ORDER BY avg_score DESC
             `);
