@@ -252,7 +252,7 @@ router.post(
 
           // Add counsellor details in the DB
           await promisePool.query(
-              `INSERT INTO counsellor (coun_id, coun_name, coun_gender, coun_phone, coun_status, coun_age, coun_identity, coun_email, coun_company, coun_title) VALUES (${user_id},"${coun_name}", "${coun_gender}", "${coun_phone}", "offline", "${coun_age}", "${coun_identity}", "${coun_email}", "${coun_company}", "${coun_title}")`
+              `INSERT INTO counsellor (coun_id, coun_name, coun_gender, coun_phone, coun_status, coun_age, coun_identity, coun_email, coun_company, coun_title, conversation_num) VALUES (${user_id},"${coun_name}", "${coun_gender}", "${coun_phone}", "offline", "${coun_age}", "${coun_identity}", "${coun_email}", "${coun_company}", "${coun_title}", "0")`
           );
 
           // Create a token

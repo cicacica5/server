@@ -9,6 +9,7 @@ const router = express.Router();
 // Endpoints
 /**
  * 访客创建咨询记录
+ * 获取record_id
  * 获取某个咨询师的咨询记录列表
  * 获取督导及其绑定的咨询师的咨询记录列表
  * 获取所有人的咨询记录列表
@@ -120,6 +121,45 @@ router.post(
             await promisePool.query(
                 `UPDATE record SET period = timestampdiff(second, "${begin_time}", "${end_time}") where record_id = '${record_id}'`
             );
+
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+
+    }
+);
+
+// @route   GET /recordID
+// @desc    获取record_id
+// @access  Public
+router.get(
+    "/recordID", [
+            check("visitor_id", "visitor_id is required").notEmpty(), // Check the visitor_id
+            check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
+        ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        // Extract info from the body
+        let visitor_id = req.query.visitor_id;
+        let coun_id = req.query.coun_id;
+
+        try {
+
+            const [id] = await promisePool.query(
+                `SELECT record_id from record where visitor_id = '${visitor_id}' and coun_id = '${coun_id}'
+                 ORDER BY begin_time desc LIMIT 1
+                `
+            );
+
+            let record_id = id[0].record_id;
+            res.json({record_id : record_id});
 
         } catch (err) {
             // Catch errors
