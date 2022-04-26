@@ -49,7 +49,6 @@ router.post(
                     `INSERT INTO record (visitor_id, coun_id, begin_time) VALUES ("${visitor_id}", "${coun_id}", "${begin_time}")`
                 );
 
-                // Check if user exists
                 const [rows] = await promisePool.query(
                     `SELECT conversation_num from counsellor WHERE coun_id = '${coun_id}'`
                 );
@@ -108,19 +107,33 @@ router.post(
                 `UPDATE record SET help_or_not = '${help_or_not}', sup_id = '${sup_id}', end_time = '${end_time}' where record_id = '${record_id}'`
             );
 
-            // Send success message to the client
-            res.send("Record created");
-
             const [row] = await promisePool.query(
-                `SELECT begin_time from record where record_id = '${record_id}'`
+                `SELECT begin_time, coun_id from record where record_id = '${record_id}'`
             );
 
             let begin_time = row[0].begin_time;
+            let coun_id = row[0].coun_id;
 
             // Add record in the DB
             await promisePool.query(
                 `UPDATE record SET period = timestampdiff(second, "${begin_time}", "${end_time}") where record_id = '${record_id}'`
             );
+
+            const [rows] = await promisePool.query(
+                `SELECT conversation_num from counsellor WHERE coun_id = '${coun_id}'`
+            );
+
+            // Extract role from rows
+            let num = rows[0].conversation_num;
+
+            num = num - 1;
+
+            await promisePool.query(
+                `UPDATE counsellor SET conversation_num = '${num}' where coun_id = '${coun_id}'`
+            );
+
+            // Send success message to the client
+            res.json({msg:"Record created"});
 
         } catch (err) {
             // Catch errors
