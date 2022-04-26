@@ -113,7 +113,7 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT avg(score) FROM feedback WHERE target_id = "${coun_id}"`
+                `SELECT avg(score) AS score FROM feedback WHERE target_id = "${coun_id}"`
             );
             const result = rows[0];
 

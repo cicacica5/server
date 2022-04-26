@@ -21,7 +21,7 @@ const router = express.Router();
  * 获取咨询师列表
  * 修改咨询师状态
  * 获取某咨询师状态
- * 添加评分
+ * 添加评分和评价
  */
 
 // @route   POST /wx-users/register
@@ -451,11 +451,10 @@ router.get(
   "/getCounsellorList",
   async (req, res) => {
 
-    //
     const [rows] = await promisePool.query(
       `SELECT counsellor.coun_id, counsellor.coun_name, login.user_name AS uname, counsellor.coun_avatar,
               counsellor.coun_status, round(avg(score),2) as coun_avg_score
-       FROM counsellor LEFT JOIN feedback ON counsellor.coun_id = feedback.target_id
+       FROM counsellor JOIN feed ON counsellor.coun_id = feed.coun_id
                        LEFT JOIN login ON counsellor.coun_id = login.user_id
        GROUP BY counsellor.coun_id`
     );
@@ -570,10 +569,15 @@ router.get(
   );
 
 // @route   PUT /wx-users/addFeedbackScore
-// @desc    添加评分
+// @desc    添加评分和评价
 // @access  Public
 router.put(
-  "/addFeedbackScore",
+  "/addFeedbackScore",[
+    check("record_id", "record_id is required").notEmpty(), // Check the record_id
+    check("visitor_id", "visitor_id is required").notEmpty(), // Check the visitor_id
+    check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
+    check("score", "score is required").notEmpty(), // Check the score
+  ],
   async (req, res) => {
 
     try {
@@ -586,16 +590,34 @@ router.put(
 
       // Extract info from the body
       let {
+        record_id,
         visitor_id,
         coun_id,
         score,
+        vis_to_coun_comment,
        } = req.body;
 
       try {
-        // Update coun_status in counsellor table
+        // Check if record exists
+        const [rows] = await promisePool.query(
+          `SELECT * FROM feed WHERE feed_id = "${record_id}"`
+      );
+      const result = rows[0];
+
+      if (!result) {
+        // Insert
         await promisePool.query(
-          `INSERT INTO feedback(user_id, target_id, score) VALUES (${visitor_id}, ${coun_id}, ${score})`
-        );
+          `INSERT INTO feed(feed_id, visitor_id, coun_id, score, vis_to_coun_comment)
+                  VALUES (${record_id}, ${visitor_id}, ${coun_id}, ${score}, "${vis_to_coun_comment}")
+          `);
+      } else {
+          // Update
+          await promisePool.query(
+            `UPDATE feed SET visitor_id = ${visitor_id}, coun_id = ${coun_id}, score = ${score}, vis_to_coun_comment = "${vis_to_coun_comment}"
+             WHERE feed_id = ${record_id}
+            `);
+      }
+
         return res.status(200).json({
           "Code": 0,
           "Message": "成功"
