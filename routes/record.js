@@ -45,10 +45,29 @@ router.post(
                 begin_time,
             } = req.body;
 
+            console.log(begin_time);
+            console.log(new Date(begin_time).toString());
+            let tmp = new Date(begin_time);
+
+            //let begin_timestamp = dateFormat("YYYY-mm-dd HH:MM", begin_time);
+            //console.log(begin_timestamp);
+            function checkTime(i) {
+                if (i < 10) {
+                    i = "0" + i
+                }
+                return i;
+            }            
+            let begin_timestamp = tmp.getFullYear() + '-' +
+                                checkTime(tmp.getMonth() + 1) + '-' +
+                                checkTime(tmp.getDate()) + ' ' +
+                                checkTime(tmp.getHours()) + ':' +
+                                checkTime(tmp.getMinutes()) + ':' +
+                                checkTime(tmp.getSeconds());
+
             try {
                 // Add record in the DB
                 await promisePool.query(
-                    `INSERT INTO record (visitor_id, coun_id, begin_time) VALUES ("${visitor_id}", "${coun_id}", "${begin_time}")`
+                    `INSERT INTO record (visitor_id, coun_id, begin_time) VALUES ("${visitor_id}", "${coun_id}", "${begin_timestamp}")`
                 );
 
                 const [rows] = await promisePool.query(
