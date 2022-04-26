@@ -59,7 +59,7 @@ router.post(
                 num = num + 1;
 
                 await promisePool.query(
-                    `UPDATE counsellor SET conversation_num = '${num}'`
+                    `UPDATE counsellor SET conversation_num = '${num}' where coun_id = '${coun_id}'`
                 );
 
                 const [id] = await promisePool.query(
@@ -76,6 +76,59 @@ router.post(
             }
     }
 );
+
+// @route   POST /recordComplete
+// @desc    咨询师补全咨询记录
+// @access  Public
+router.post(
+    "/", [
+        check("record_id", "record_id is required").notEmpty(), // Check the record_id
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        // Extract info from the body
+        let {
+            record_id,
+            help_or_not,
+            sup_id,
+            end_time,
+        } = req.body;
+
+        try {
+
+            // Add record in the DB
+            await promisePool.query(
+                `UPDATE record SET help_or_not = '${help_or_not}', sup_id = '${sup_id}', end_time = '${end_time}' where record_id = '${record_id}'`
+            );
+
+            // Send success message to the client
+            res.send("Record created");
+
+            const [row] = await promisePool.query(
+                `SELECT begin_time from record where record_id = '${record_id}'`
+            );
+
+            let begin_time = row[0].begin_time;
+
+            // Add record in the DB
+            await promisePool.query(
+                `UPDATE record SET period = timestampdiff(second, "${begin_time}", "${end_time}") where record_id = '${record_id}'`
+            );
+
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+
+    }
+);
+
 
 // @route   GET /record/list
 // @desc    获取某个咨询师的咨询记录列表
