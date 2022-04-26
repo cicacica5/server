@@ -391,7 +391,7 @@ router.post(
 
           // Add student details in the DB
           await promisePool.query(
-              `INSERT INTO supervisor (sup_id, sup_name, sup_gender, sup_phone, sup_status, sup_age, sup_identity, sup_email, sup_company, sup_title, sup_qualification, sup_quaNumber) VALUES (${user_id},"${sup_name}", "${sup_gender}", "${sup_phone}", "offline", "${sup_age}", "${sup_identity}", "${sup_email}", "${sup_company}", "${sup_title}", "${sup_qualification}", "${sup_quaNumber}")`
+              `INSERT INTO supervisor (sup_id, sup_name, sup_gender, sup_phone, sup_status, sup_age, sup_identity, sup_email, sup_company, sup_title, sup_qualification, sup_quaNumber, conversation_num) VALUES (${user_id},"${sup_name}", "${sup_gender}", "${sup_phone}", "offline", "${sup_age}", "${sup_identity}", "${sup_email}", "${sup_company}", "${sup_title}", "${sup_qualification}", "${sup_quaNumber}", "0")`
           );
 
           // Create a token

@@ -12,6 +12,7 @@ const router = express.Router();
  * 修改督导状态
  * 获取某个督导状态
  * 获取绑定的咨询师列表
+ * 获取督导当前会话数
  */
 
 // @route   PUT /supervisor/changeStatus
@@ -190,5 +191,34 @@ async(req, res) => {
         throw err;
     }
 });
+
+// @route GET /supervisor/getConversationNum
+// @desc  获取督导当前会话数
+// @access  Public
+router.get(
+    "/getConversationNum",[
+        check("sup_id", "sup_id is required").notEmpty(), // Check the coun_id
+    ],
+    async (req, res) => {
+        let sup_id = req.query.sup_id;
+
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT conversation_num FROM supervisor WHERE sup_id = '${sup_id}'`
+            );
+            const row = rows[0];
+
+            if (row == undefined) {
+                return res.status(400).json({msg : "Supervisor Not Exist."});
+            } else {
+                return res.status(200).json({
+                    "conversation_num": row.conversation_num
+                });
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+);
 
 module.exports = router;

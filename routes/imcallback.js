@@ -44,11 +44,30 @@ router.post(
             text = "[合并聊天记录]";
         }
 
+        function checkTime(i) {
+            if (i < 10) {
+                i = "0" + i
+            }
+            return i;
+        } 
+        // let msg_ts = new Date(msg_time * 1000);
+        // let ts= msg_ts.toLocaleString();
+        // let msg_timestamp =  ts.replace(/\//g,"-");
+
+        function getData(n) {
+            let msg_ts = new Date(n * 1000),
+            y = msg_ts.getFullYear(),
+            m = msg_ts.getMonth() + 1,
+            d = msg_ts.getDate();
+            return y + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d) + " " + msg_ts.toTimeString().substr(0, 8);
+        }
+        let msg_timeStamp = getData(msg_time);
+
         try {
 
             // Add bind in the DB
             await promisePool.query(
-                `INSERT INTO message (msg_key, from_user, to_user, msg_time, msg_type, text) VALUES ("${msg_key}", "${from_user}", "${to_user}", "${msg_time}", "${msg_type}", "${text}")`
+                `INSERT INTO message (msg_key, from_user, to_user, msg_time, msg_type, text) VALUES ("${msg_key}", "${from_user}", "${to_user}", "${msg_timeStamp}", "${msg_type}", "${text}")`
             );
 
             res.json({ActionStatus:"OK", ErrorInfo:"", ErrorCode:0});
