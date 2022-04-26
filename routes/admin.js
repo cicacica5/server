@@ -787,4 +787,100 @@ router.get(
     }
 );
 
+// @route GET /admin/getOnlineCounConversationNum
+// @desc  获取当前在线的咨询师总会话数
+// @access  Public
+router.get(
+    "/getOnlineCounConversationNum",[
+        check("user_id", "user_id is required").notEmpty(), // Check the user_id
+    ],
+    async (req, res) => {
+
+        // Check user_id
+        let user_id = req.query.user_id;
+        const [rows] = await promisePool.query(
+            `SELECT EXISTS(SELECT * from login WHERE user_id = "${user_id}" ) "EXISTS" FROM dual`
+        );
+        const result = rows[0].EXISTS;
+        if (result) {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = user_role[0].role;
+            if(role != "admin"){
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } else {
+            return res.status(401).json({ msg: "User not exists." });
+        }
+
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT SUM(conversation_num) AS onlineCoun_conversation_num
+                 FROM counsellor WHERE coun_status = "busy" OR coun_status = "free"
+                 `
+            );
+            const row = rows[0];
+
+            if (row == undefined) {
+                return res.status(401).json({msg : "No counsellor."});
+            } else {
+                return res.status(200).json({
+                    "onlineCoun_conversation_num": row.onlineCoun_conversation_num
+                });
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+);
+
+// @route GET /admin/getOnlineSupConversationNum
+// @desc  获取当前在线的督导总会话数
+// @access  Public
+router.get(
+    "/getOnlineSupConversationNum",[
+        check("user_id", "user_id is required").notEmpty(), // Check the user_id
+    ],
+    async (req, res) => {
+
+        // Check user_id
+        let user_id = req.query.user_id;
+        const [rows] = await promisePool.query(
+            `SELECT EXISTS(SELECT * from login WHERE user_id = "${user_id}" ) "EXISTS" FROM dual`
+        );
+        const result = rows[0].EXISTS;
+        if (result) {
+            const [user_role] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = user_role[0].role;
+            if(role != "admin"){
+                return res.status(401).json({ msg: "role is invaild." });
+            }
+        } else {
+            return res.status(401).json({ msg: "User not exists." });
+        }
+
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT SUM(conversation_num) AS onlineSup_conversation_num
+                 FROM supervisor WHERE sup_status = "busy" OR sup_status = "free"
+                 `
+            );
+            const row = rows[0];
+
+            if (row == undefined) {
+                return res.status(401).json({msg : "No supervisor."});
+            } else {
+                return res.status(200).json({
+                    "onlineSup_conversation_num": row.onlineSup_conversation_num
+                });
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+);
+
 module.exports = router;
