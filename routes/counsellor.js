@@ -14,6 +14,7 @@ const router = express.Router();
  * 修改咨询师状态
  * 获取某个咨询师状态
  * 获取绑定的督导列表
+ * 获取咨询师当前会话数
  */
 
 // @route   PUT /counsellor/bind
@@ -250,5 +251,35 @@ router.get("/bindSupervisorList", [
             throw err;
         }
     });
+
+// @route GET /counsellor/getConversationNum
+// @desc  获取咨询师当前会话数
+// @access  Public
+router.get(
+    "/getConversationNum",[
+        check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
+    ],
+    async (req, res) => {
+        let coun_id = req.query.coun_id;
+
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT conversation_num FROM counsellor WHERE coun_id = '${coun_id}'`
+            );
+            const row = rows[0];
+
+            if (row == undefined) {
+                return res.status(400).json({msg : "Counsellor Not Exist."});
+            } else {
+                const conversation_num = row.conversation_num;
+                return res.status(200).json({
+                    "conversation_num": conversation_num
+                });
+            }
+        } catch (err) {
+            throw err;
+        }
+    }
+);
 
 module.exports = router;
