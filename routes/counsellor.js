@@ -271,9 +271,8 @@ router.get(
             if (row == undefined) {
                 return res.status(400).json({msg : "Counsellor Not Exist."});
             } else {
-                const conversation_num = row.conversation_num;
                 return res.status(200).json({
-                    "conversation_num": conversation_num
+                    "conversation_num": row.conversation_num
                 });
             }
         } catch (err) {
