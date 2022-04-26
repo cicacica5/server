@@ -19,7 +19,11 @@ const router = express.Router();
 // @desc    咨询师评价访客
 // @access  Private
 router.post(
-    "/toVisitor",
+    "/toVisitor",[
+        check("record_id", "record_id is required").notEmpty(), // Check the record_id
+        check("visitor_id", "visitor_id is required").notEmpty(), // Check the visitor_id
+        check("coun_id", "coun_id is required").notEmpty(), // Check the coun_id
+      ],
     async (req, res) => {
 
         try {
@@ -32,16 +36,33 @@ router.post(
 
             // Extract info from the body
             let {
+                record_id,
                 coun_id,
                 visitor_id,
-                score,
+                coun_to_vis_comment,
             } = req.body;
 
             try {
-                // Update coun_status in counsellor table
-                await promisePool.query(
-                    `INSERT INTO feedback(user_id, target_id, score) VALUES (${coun_id}, ${visitor_id}, ${score})`
+                // Check if record exists
+                const [rows] = await promisePool.query(
+                    `SELECT * FROM feed WHERE feed_id = "${record_id}"`
                 );
+                const result = rows[0];
+
+                if (!result) {
+                    // Insert
+                    await promisePool.query(
+                        `INSERT INTO feed(feed_id, visitor_id, coun_id, coun_to_vis_comment)
+                         VALUES (${record_id}, ${visitor_id}, ${coun_id}, "${coun_to_vis_comment}")
+                        `);
+                    } else {
+                        // Update
+                        await promisePool.query(
+                            `UPDATE feed SET visitor_id = ${visitor_id}, coun_id = ${coun_id}, coun_to_vis_comment = "${coun_to_vis_comment}"
+                             WHERE feed_id = ${record_id}
+                            `);
+                    }
+  
                 return res.status(200).json({
                     "Code": 0,
                     "Message": "成功"
@@ -113,7 +134,7 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT avg(score) AS score FROM feedback WHERE target_id = "${coun_id}"`
+                `SELECT avg(score) AS score FROM feed WHERE coun_id = "${coun_id}"`
             );
             const result = rows[0];
 
