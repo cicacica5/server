@@ -69,7 +69,7 @@ router.get("/counsellorList", [
                             SUM(period) AS total_time,
                             COUNT(record_id or null) as total_num
                      FROM counsellor LEFT JOIN feed ON counsellor.coun_id = feed.coun_id
-                                     JOIN record ON counsellor.coun_id = record.coun_id AND feed_id = record_id
+                                     LEFT JOIN record ON counsellor.coun_id = record.coun_id AND feed_id = record_id
                                      JOIN login ON counsellor.coun_id = login.user_id
                      GROUP BY counsellor.coun_id
                     `);

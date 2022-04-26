@@ -134,7 +134,7 @@ router.get(
         try {
             // Check if record exists
             const [rows] = await promisePool.query(
-                `SELECT avg(score) AS score FROM feed WHERE coun_id = "${coun_id}"`
+                `SELECT ROUND(avg(score),2) AS score FROM feed WHERE coun_id = "${coun_id}"`
             );
             const result = rows[0];
 

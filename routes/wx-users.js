@@ -420,6 +420,7 @@ router.get(
                    INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
                    LEFT JOIN login ON login.user_id = record.coun_id
        WHERE record.visitor_id = (SELECT user_id FROM login WHERE user_name = "${user_name}")
+       ORDER BY record_id DESC
       `);
 
     try {
@@ -455,7 +456,7 @@ router.get(
     const [rows] = await promisePool.query(
       `SELECT counsellor.coun_id, counsellor.coun_name, login.user_name AS uname, counsellor.coun_avatar,
               counsellor.coun_status, round(avg(score),2) as coun_avg_score
-       FROM counsellor JOIN feed ON counsellor.coun_id = feed.coun_id
+       FROM counsellor LEFT JOIN feed ON counsellor.coun_id = feed.coun_id
                        LEFT JOIN login ON counsellor.coun_id = login.user_id
        GROUP BY counsellor.coun_id`
     );
