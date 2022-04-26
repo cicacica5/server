@@ -44,11 +44,14 @@ router.post(
             text = "[合并聊天记录]";
         }
 
+        let msg_ts = new Date(msg_time * 1000);
+        let msg_timeStamp = msg_ts.toLocaleString();
+
         try {
 
             // Add bind in the DB
             await promisePool.query(
-                `INSERT INTO message (msg_key, from_user, to_user, msg_time, msg_type, text) VALUES ("${msg_key}", "${from_user}", "${to_user}", "${msg_time}", "${msg_type}", "${text}")`
+                `INSERT INTO message (msg_key, from_user, to_user, msg_time, msg_type, text) VALUES ("${msg_key}", "${from_user}", "${to_user}", "${msg_timeStamp}", "${msg_type}", "${text}")`
             );
 
             res.json({ActionStatus:"OK", ErrorInfo:"", ErrorCode:0});
