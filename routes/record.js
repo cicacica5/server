@@ -20,6 +20,7 @@ const router = express.Router();
  * 获取咨询师或督导的累计咨询数
  * 获取最近n个咨询/求助记录
  * 查看/导出咨询记录
+ * 同步聊天记录
  */
 
 // @route   POST /record
@@ -357,8 +358,8 @@ router.post(
 // @access  Public
 router.get(
     "/recordID", [
-        check("visitor", "visitor is required").notEmpty(), // Check the visitor_id
-        check("coun", "coun is required").notEmpty(), // Check the coun_id
+        check("visitor", "访客的user_name is required").notEmpty(),
+        check("coun", "咨询师的user_name is required").notEmpty(),
     ],
     async(req, res) => {
         // Check for errors
@@ -865,6 +866,125 @@ router.get(
                 message[i][from_theName] = from_name;
                 message[i][to_theName] = to_name;
 
+            }
+
+            res.send(message);
+
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+
+    }
+);
+
+// @route   GET /record/sync
+// @desc    同步聊天记录
+// @access  Public
+
+router.get(
+    "/sync", [
+        check("coun", "咨询师的user_name is required.").notEmpty(),
+        check("sup", "督导的user_name is required.").notEmpty(),
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({errors: errors.array()});
+        }
+
+        let coun_name = req.query.coun;
+        let sup_name = req.query.sup;
+        let coun_id = 0;
+        let sup_id = 0;
+        let record_id = 0;
+
+        try {
+
+            const [c_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${coun}'`
+            );
+
+            let c_role = c_id[0].role;
+
+            if(c_role == "counsellor")  {
+                coun_id = c_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "coun不是咨询师的user_name！！" });
+            }
+
+            const [s_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${sup}'`
+            );
+
+            let s_role = s_id[0].role;
+
+            if(s_role == "supervisor")  {
+                sup_id = s_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "sup不是督导的user_name！！" });
+            }
+
+            const [id] = await promisePool.query(
+                `SELECT record_id from record where coun_id = '${coun_id}' and sup_id = '${sup_id}' order by begin_time desc limit 1`
+            );
+
+            let record_id = id[0].record_id;
+
+            const [message] = await promisePool.query(
+                `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}'`
+            );
+
+            for (let i = 0; i < message.length; i++) {
+                from_user = message[i].from_user;
+                to_user = message[i].to_user;
+
+                let [from_rows] = await promisePool.query(
+                    `SELECT role from login where user_name = '${from_user}'`
+                );
+                from_role = from_rows[0].role;
+
+                if (from_role == "visitor") {
+                    let [vnames] = await promisePool.query(
+                        `SELECT visitor_name from login INNER JOIN visitor ON login.user_id = visitor.visitor_id where user_name = '${from_user}'`
+                    );
+                    from_name = vnames[0].visitor_name;
+                } else if (from_role == "counsellor") {
+                    let [cnames] = await promisePool.query(
+                        `SELECT coun_name from login INNER JOIN counsellor ON login.user_id = counsellor.coun_id where user_name = '${from_user}'`
+                    );
+                    from_name = cnames[0].coun_name;
+                } else if (from_role == "supervisor") {
+                    break;
+                } else {
+                    return res.status(401).json({msg: "参与会话的角色异常！！"});
+                }
+
+                let [to_rows] = await promisePool.query(
+                    `SELECT role from login where user_name = '${to_user}'`
+                );
+                to_role = to_rows[0].role;
+
+                if (to_role == "visitor") {
+                    let [vnames] = await promisePool.query(
+                        `SELECT visitor_name from login INNER JOIN visitor ON login.user_id = visitor.visitor_id where user_name = '${to_user}'`
+                    );
+                    to_name = vnames[0].visitor_name;
+                } else if (to_role == "counsellor") {
+                    let [cnames] = await promisePool.query(
+                        `SELECT coun_name from login INNER JOIN counsellor ON login.user_id = counsellor.coun_id where user_name = '${to_user}'`
+                    );
+                    to_name = cnames[0].coun_name;
+                } else if (to_role == "supervisor") {
+                    break;
+                } else {
+                    return res.status(401).json({msg: "参与会话的角色异常！！"});
+                }
+
+                message[i][from_theName] = from_name;
+                message[i][to_theName] = to_name;
             }
 
             res.send(message);
