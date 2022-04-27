@@ -488,7 +488,7 @@ router.get(
                         counsellor.coun_id, counsellor.coun_name,
                         record.help_or_not, supervisor.sup_id, supervisor.sup_name,
                         record.begin_time, record.end_time, record.period,
-                        vis_to_coun_comment, coun_to_vis_comment
+                        score, vis_to_coun_comment, coun_to_vis_comment
                  FROM record JOIN bind ON record.sup_id = bind.sup_id AND record.coun_id = bind.coun_id
                              LEFT JOIN supervisor ON record.sup_id = supervisor.sup_id
                              LEFT JOIN counsellor ON record.coun_id = counsellor.coun_id
@@ -526,7 +526,7 @@ router.get(
             // Check if record exists
             const [rows] = await promisePool.query(
                 `SELECT record_id, visitor.visitor_name, counsellor.coun_name, help_or_not, supervisor.sup_name, begin_time, end_time, period,
-                        vis_to_coun_comment, coun_to_vis_comment
+                        score, vis_to_coun_comment, coun_to_vis_comment
                  FROM record INNER JOIN visitor ON record.visitor_id = visitor.visitor_id
                              INNER JOIN supervisor ON record.sup_id = supervisor.sup_id
                              INNER JOIN counsellor ON record.coun_id = counsellor.coun_id
@@ -971,6 +971,7 @@ router.get(
                 }
                 let time = getDate(message[i].msg_time);
                 message[i].msg_time = time;
+                console.log(time);
 
                 let [from_rows] = await promisePool.query(
                     `SELECT role from login where user_name = '${from_user}'`
