@@ -31,16 +31,17 @@ router.get("/getInfo", //auth,
     try {
         // Get user_id from DB
         const [rows] = await promisePool.query(
-            `SELECT user_id, role from login WHERE user_name='${user_name}'`
+            `SELECT user_id, user_password, role from login WHERE user_name='${user_name}'`
         );
 
         // Extract user_id and role from rows
-        const { user_id, role } = rows[0];
+        const { user_id, user_password, role } = rows[0];
 
         // Create user object
         let user = {
             user_id,
             user_name,
+            user_password,
             role,
         };
 
