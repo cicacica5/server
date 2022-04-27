@@ -802,10 +802,12 @@ router.get(
         let to_name = "default";
         let from_user = "default";
         let to_user = "default";
+        let from_theName = "from_name";
+        let to_theName = "to_name";
 
         try {
             const [message] = await promisePool.query(
-                `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}')`
+                `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}'`
             );
 
             for (let i = 0; i < message.length; i++) {
@@ -819,19 +821,19 @@ router.get(
 
                 if (from_role == "visitor") {
                     let [vnames] = await promisePool.query(
-                        `SELECT visitor_name from login INNER JOIN visitor where user_name = '${from_user}'`
+                        `SELECT visitor_name from login INNER JOIN visitor ON login.user_id = visitor.visitor_id where user_name = '${from_user}'`
                     );
                     from_name = vnames[0].visitor_name;
                 } else if (from_role == "counsellor") {
                     let [cnames] = await promisePool.query(
-                        `SELECT coun_name from login INNER JOIN counsellor where user_name = '${from_user}'`
+                        `SELECT coun_name from login INNER JOIN counsellor ON login.user_id = counsellor.coun_id where user_name = '${from_user}'`
                     );
                     from_name = cnames[0].coun_name;
                 } else if (from_role == "supervisor") {
                     let [snames] = await promisePool.query(
-                        `SELECT sup_name from login INNER JOIN supervisor where user_name = '${from_user}'`
+                        `SELECT sup_name from login INNER JOIN supervisor ON login.user_id = supervisor.sup_id where user_name = '${from_user}'`
                     );
-                    from_name = snames[0].visitor_name;
+                    from_name = snames[0].sup_name;
                 } else {
                     return res.status(401).json({msg: "参与会话的角色异常！！"});
                 }
@@ -843,25 +845,25 @@ router.get(
 
                 if (to_role == "visitor") {
                     let [vnames] = await promisePool.query(
-                        `SELECT visitor_name from login INNER JOIN visitor where user_name = '${to_user}'`
+                        `SELECT visitor_name from login INNER JOIN visitor ON login.user_id = visitor.visitor_id where user_name = '${to_user}'`
                     );
                     to_name = vnames[0].visitor_name;
                 } else if (to_role == "counsellor") {
                     let [cnames] = await promisePool.query(
-                        `SELECT coun_name from login INNER JOIN counsellor where user_name = '${to_user}'`
+                        `SELECT coun_name from login INNER JOIN counsellor ON login.user_id = counsellor.coun_id where user_name = '${to_user}'`
                     );
                     to_name = cnames[0].coun_name;
                 } else if (to_role == "supervisor") {
                     let [snames] = await promisePool.query(
-                        `SELECT sup_name from login INNER JOIN supervisor where user_name = '${to_user}'`
+                        `SELECT sup_name from login INNER JOIN supervisor ON login.user_id = supervisor.sup_id where user_name = '${to_user}'`
                     );
-                    to_name = snames[0].visitor_name;
+                    to_name = snames[0].sup_name;
                 } else {
                     return res.status(401).json({msg: "参与会话的角色异常！！"});
                 }
 
-                message[i][from_name] = from_name;
-                message[i][to_name] = to_name;
+                message[i][from_theName] = from_name;
+                message[i][to_theName] = to_name;
 
             }
 
