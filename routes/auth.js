@@ -155,8 +155,8 @@ router.get("/getInfo", //auth,
 // @access  Public
 router.post(
     "/", [
-        check("user_name", "user_name is required").notEmpty(), // Check user_name
-        check("user_password", "user_password is required").exists(), // Check user_password
+        check("user_name", "请输入用户名").notEmpty(), // Check user_name
+        check("user_password", "请输入密码").exists(), // Check user_password
     ],
     async(req, res) => {
         // Check if there are errors

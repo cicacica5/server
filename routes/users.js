@@ -21,15 +21,15 @@ const router = express.Router();
 // @access  Public, hidden
 router.post(
     "/admin", [
-      check("user_name", "user_name is required").notEmpty(), // Check the user_name
+      check("user_name", "请填写正确的用户名").isLength({max:32, min:2}), // Check the user_name
       check(
           "user_password",
-          "Please enter a password with 6 or more characters"
+          "密码需要至少6位"
       ).isLength({ min: 6 }), // Check the password
       check("role", "Role is required").notEmpty(), // Check the role
-      check("admin_name", "admin_name is required").notEmpty(), // Check the admin_name
-      check("admin_gender", "Gender is required").notEmpty(), // Check the gender
-      check("admin_phone", "Phone is required").isLength(11), // Check the phone
+      check("admin_name", "请填写姓名").notEmpty(), // Check the admin_name
+      check("admin_gender", "请填写性别").notEmpty(), // Check the gender
+      check("admin_phone", "手机号不正确").isLength(11), // Check the phone
     ],
     async(req, res) => {
       // Check for errors
@@ -140,20 +140,17 @@ router.post(
 // @access  Public
 router.post(
     "/counsellor", [
-      check("user_name", "Username length is 2-32.").isLength({max:32, min:2}), // Check the username
-      check(
-          "user_password",
-          "Please enter a password with 6 or more characters."
-      ).isLength({ min: 6 }), // Check the password
+      check("user_name", "请填写正确的用户名").isLength({max:32, min:2}), // Check the username
+      check("user_password","密码需要至少6位").isLength({ min: 6 }), // Check the password
       check("role", "Role is required.").notEmpty(), // Check the role
-      check("coun_name", "coun_name is required.").notEmpty(), // Check the coun_name
-      check("coun_gender", "Gender is required.").notEmpty(), // Check the gender
-      check("coun_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
-      check("coun_age", "Age is an Integer.").isInt(), // Check the age
-      check("coun_email", "Please enter correct email.").isEmail(), // Check the email
-      check("coun_company", "Company is required.").notEmpty(), // check the company
-      check("coun_title", "Title is required.").notEmpty(), // Check the title
-      check("coun_identity", "Please enter vaild identity.").isLength(18) // Check the identity
+      check("coun_name", "请填写姓名").notEmpty(), // Check the coun_name
+      check("coun_gender", "请填写性别").notEmpty(), // Check the gender
+      check("coun_phone", "手机号不正确").isLength(11), // Check the phone
+      check("coun_age", "请填写正确的年龄").isInt(), // Check the age
+      check("coun_email", "请填写正确的邮箱地址").isEmail(), // Check the email
+      check("coun_company", "请填写工作单位").notEmpty(), // check the company
+      check("coun_title", "请填写职称").notEmpty(), // Check the title
+      check("coun_identity", "身份证号不正确").isLength(18) // Check the identity
     ],
     async(req, res) => {
       // Check for errors
@@ -276,22 +273,19 @@ router.post(
 // @access  Public
 router.post(
     "/supervisor", [
-      check("user_name", "username is required").notEmpty(), // Check the username
-      check(
-          "user_password",
-          "Please enter a password with 6 or more characters"
-      ).isLength({ min: 6 }), // Check the password
+      check("user_name", "请填写正确的用户名").isLength({max:32, min:2}), // Check the username
+      check("user_password","密码需要至少6位").isLength({ min: 6 }), // Check the password
       check("role", "Role is required").notEmpty(), // Check the role
-      check("sup_name", "sup_name is required").notEmpty(), // Check the sup_name
-      check("sup_gender", "Gender is required").notEmpty(), // Check the gender
-      check("sup_phone", "PhoneNumber length is 11.").isLength(11), // Check the phone
-      check("sup_age", "Age is an Integer.").isInt(), // Check the age
-      check("sup_email", "Please enter correct email.").isEmail(), // Check the email
-      check("sup_company", "Company is required.").notEmpty(), // check the company
-      check("sup_title", "Title is required.").notEmpty(), // Check the title
-      check("sup_identity", "Please enter vaild identity.").isLength(18), // Check the identity
-      check("sup_qualification", "Qualification is required.").notEmpty(), // Check the title
-      check("sup_quaNumber", "Qualification number is required.").notEmpty() // Check the title
+      check("sup_name", "请填写姓名").notEmpty(), // Check the sup_name
+      check("sup_gender", "请填写性别").notEmpty(), // Check the gender
+      check("sup_phone", "手机号不正确").isLength(11), // Check the phone
+      check("sup_age", "请填写正确的年龄").isInt(), // Check the age
+      check("sup_email", "请填写正确的邮箱地址").isEmail(), // Check the email
+      check("sup_company", "请填写工作单位").notEmpty(), // check the company
+      check("sup_title", "请填写职称").notEmpty(), // Check the title
+      check("sup_identity", "身份证号不正确").isLength(18), // Check the identity
+      check("sup_qualification", "请填写资格证书").notEmpty(), // Check the title
+      check("sup_quaNumber", "请填写资格编号").notEmpty() // Check the title
     ],
     async(req, res) => {
       // Check for errors
