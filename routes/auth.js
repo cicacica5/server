@@ -48,11 +48,14 @@ router.get("/getInfo", //auth,
         if (role === "counsellor") {
             // Get counsellor details from the DB
             const [rows] = await promisePool.query(
-                `SELECT coun_name, coun_gender, coun_phone, coun_status, coun_avatar from counsellor WHERE coun_id='${user_id}'`
+                `SELECT coun_name, coun_gender, coun_phone, coun_status, coun_avatar,
+                        coun_age, coun_identity, coun_email, coun_company, coun_title
+                 from counsellor WHERE coun_id='${user_id}'`
             );
 
             // Extract the details in variables
-            const { coun_name, coun_gender, coun_phone, coun_status, coun_avatar} = rows[0];
+            const { coun_name, coun_gender, coun_phone, coun_status, coun_avatar,
+                    coun_age, coun_identity, coun_email, coun_company, coun_title} = rows[0];
 
             // Store the details in the user object
             user = {
@@ -61,23 +64,27 @@ router.get("/getInfo", //auth,
                 coun_gender,
                 coun_phone,
                 coun_status,
-                coun_avatar
+                coun_avatar,
+                coun_age,
+                coun_identity,
+                coun_email,
+                coun_company,
+                coun_title,
             };
             // Send user object to the client
             res.json(user);
         } else if (role === "supervisor") {
             // Get supervisor details from the DB
             const [rows] = await promisePool.query(
-                `SELECT sup_name, sup_gender, sup_phone, sup_status, sup_avatar from supervisor WHERE sup_id='${user_id}'`
+                `SELECT sup_name, sup_gender, sup_phone, sup_status, sup_avatar,
+                        sup_age, sup_identity, sup_email, sup_company, sup_title, sup_qualification, sup_quaNumber
+                 from supervisor WHERE sup_id='${user_id}'`
             );
 
             // Extract the details in variables
             const {
-                sup_name,
-                sup_gender,
-                sup_phone,
-                sup_status,
-                sup_avatar
+                sup_name, sup_gender, sup_phone, sup_status, sup_avatar,
+                sup_age, sup_identity, sup_email, sup_company, sup_title, sup_qualification, sup_quaNumber
             } = rows[0];
 
             // Store the details in the user object
@@ -87,7 +94,8 @@ router.get("/getInfo", //auth,
                 sup_gender,
                 sup_phone,
                 sup_status,
-                sup_avatar
+                sup_avatar,
+                sup_age, sup_identity, sup_email, sup_company, sup_title, sup_qualification, sup_quaNumber,
             };
 
             res.json(user);
@@ -155,8 +163,8 @@ router.get("/getInfo", //auth,
 // @access  Public
 router.post(
     "/", [
-        check("user_name", "user_name is required").notEmpty(), // Check user_name
-        check("user_password", "user_password is required").exists(), // Check user_password
+        check("user_name", "请输入用户名").notEmpty(), // Check user_name
+        check("user_password", "请输入密码").exists(), // Check user_password
     ],
     async(req, res) => {
         // Check if there are errors
