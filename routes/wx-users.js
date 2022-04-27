@@ -373,7 +373,7 @@ router.put(
             });
       }
 
-            // Check phone
+      // Check emergency_phone
       var reg_ph = /^1[0-9]{10}/;
       if(!reg_ph.test(emergency_phone)){
         return res.status(200).json(
@@ -383,7 +383,7 @@ router.put(
         });
       }
 
-      // Check visitor_name
+      // Check emergency_name
       var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
       if(!reg_name.test(emergency_name)){
             return res.status(200).json({
