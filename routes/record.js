@@ -53,7 +53,7 @@ router.post(
                     i = "0" + i
                 }
                 return i;
-            }            
+            }
             let begin_timestamp = tmp.getFullYear() + '-' +
                                 checkTime(tmp.getMonth() + 1) + '-' +
                                 checkTime(tmp.getDate()) + ' ' +
@@ -191,7 +191,7 @@ router.post(
                     i = "0" + i
                 }
                 return i;
-            }            
+            }
             let newBegin_time = begin_time.getFullYear() + '-' +
                         checkTime(begin_time.getMonth() + 1) + '-' +
                         checkTime(begin_time.getDate()) + ' ' +
@@ -796,39 +796,82 @@ router.get(
         }
 
         const record_id = req.query.record_id;
-/*
-        const [message] = await promisePool.query(
-            `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}'`
-                `SELECT * FROM (SELECT record_id, visitor_id, coun_id, uname, begin_time, period, Round(AVG(score),2) AS score
-       FROM (SELECT record_id, visitor_id, coun_id, user_name AS uname, begin_time, period, score
-             FROM feedback FULL JOIN record ON user_id = visitor_id AND target_id = coun_id
-                           LEFT JOIN login ON coun_id = login.user_id
-             GROUP BY record_id DESC) AS result
-             WHERE visitor_id = (SELECT user_id FROM login where user_name = '${user_name}')
-             GROUP BY coun_id) AS result2 LEFT JOIN counsellor ON result2.coun_id = counsellor.coun_id
-       GROUP BY record_id`
-        );
+        let from_role = "default";
+        let to_role = "default";
+        let from_name = "default";
+        let to_name = "default";
+        let from_user = "default";
+        let to_user = "default";
 
-        for (let i = 0; i < message.length; i++) {
-            let sup_id = sups[i];
-            // Check if bind exists
-            let [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from bind WHERE coun_id = "${coun_id}" and sup_id = "${sup_id}") "EXISTS" FROM dual`
+        try {
+            const [message] = await promisePool.query(
+                `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}')`
             );
-            let result = rows[0].EXISTS;
 
-            if (result) {
-                // Bind already exists
-                return res.status(400).json({ msg: "Bind already exists" });
-            } else {
+            for (let i = 0; i < message.length; i++) {
+                from_user = message[i].from_user;
+                to_user = message[i].to_user;
 
-                // Add bind in the DB
-                await promisePool.query(
-                    `INSERT INTO bind (coun_id, sup_id) VALUES ("${coun_id}", "${sup_id}")`
+                let [from_rows] = await promisePool.query(
+                    `SELECT role from login where user_name = '${from_user}'`
                 );
+                from_role = from_rows[0].role;
+
+                if (from_role == "visitor") {
+                    let [vnames] = await promisePool.query(
+                        `SELECT visitor_name from login INNER JOIN visitor where user_name = '${from_user}'`
+                    );
+                    from_name = vnames[0].visitor_name;
+                } else if (from_role == "counsellor") {
+                    let [cnames] = await promisePool.query(
+                        `SELECT coun_name from login INNER JOIN counsellor where user_name = '${from_user}'`
+                    );
+                    from_name = cnames[0].coun_name;
+                } else if (from_role == "supervisor") {
+                    let [snames] = await promisePool.query(
+                        `SELECT sup_name from login INNER JOIN supervisor where user_name = '${from_user}'`
+                    );
+                    from_name = snames[0].visitor_name;
+                } else {
+                    return res.status(401).json({msg: "参与会话的角色异常！！"});
+                }
+
+                let [to_rows] = await promisePool.query(
+                    `SELECT role from login where user_name = '${to_user}'`
+                );
+                to_role = to_rows[0].role;
+
+                if (to_role == "visitor") {
+                    let [vnames] = await promisePool.query(
+                        `SELECT visitor_name from login INNER JOIN visitor where user_name = '${to_user}'`
+                    );
+                    to_name = vnames[0].visitor_name;
+                } else if (to_role == "counsellor") {
+                    let [cnames] = await promisePool.query(
+                        `SELECT coun_name from login INNER JOIN counsellor where user_name = '${to_user}'`
+                    );
+                    to_name = cnames[0].coun_name;
+                } else if (to_role == "supervisor") {
+                    let [snames] = await promisePool.query(
+                        `SELECT sup_name from login INNER JOIN supervisor where user_name = '${to_user}'`
+                    );
+                    to_name = snames[0].visitor_name;
+                } else {
+                    return res.status(401).json({msg: "参与会话的角色异常！！"});
+                }
+
+                message[i][from_name] = from_name;
+                message[i][to_name] = to_name;
+
             }
+
+            res.send(message);
+
+        } catch (err) {
+            // Catch errors
+            throw err;
         }
-*/
+
     }
 );
 
