@@ -377,7 +377,7 @@ router.get(
         let to_role = "default";
         let from_id = 0;
         let to_id = 0;
-        let record_id = 0;
+        let r_id = 0;
 
         try {
 
@@ -391,7 +391,7 @@ router.get(
                 `SELECT role, user_id from login where user_name = '${to_user}'`
             );
             to_role = to_rows[0].role;
-            to_id = from_rows[0].user_id;
+            to_id = to_rows[0].user_id;
 
             if (from_role == "visitor") {
                 return res.status(401).json({msg: "发送方不能为访客！！"});
@@ -401,13 +401,13 @@ router.get(
                         `SELECT record_id from record where visitor_id = '${to_id}' and coun_id = '${from_id}'
                  ORDER BY begin_time desc LIMIT 1`
                     );
-                    record_id = rows[0].record_id;
+                    r_id = rows[0].record_id;
                 } else if(to_role == "supervisor") {
                     let [rows] = await promisePool.query(
                         `SELECT record_id from record where coun_id = '${from_id}' and sup_id = '${to_id}'
                  ORDER BY begin_time desc LIMIT 1`
                     );
-                    record_id = rows[0].record_id;
+                    r_id = rows[0].record_id;
                 } else {
                     return res.status(401).json({msg: "发送方为咨询师时接收方不能为咨询师！！"});
                 }
@@ -417,13 +417,13 @@ router.get(
                         `SELECT record_id from record where coun_id = '${to_id}' and sup_id = '${from_id}'
                  ORDER BY begin_time desc LIMIT 1`
                     );
-                    record_id = rows[0].record_id;
+                    r_id = rows[0].record_id;
                 } else {
                     return res.status(401).json({msg: "发送方为督导时接收方只能为咨询师！！"});
                 }
             }
 
-            res.json({record_id : record_id});
+            res.json({record_id : r_id});
 
         } catch (err) {
             // Catch errors
