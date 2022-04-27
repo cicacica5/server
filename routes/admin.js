@@ -716,7 +716,7 @@ router.get(
 
             const [result] = await promisePool.query(
                 `SELECT CURRENT_DATE() AS today,
-                        ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))/60) AS today_time
+                        ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))) AS today_time
                  FROM record
                 `
                 );
