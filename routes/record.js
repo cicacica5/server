@@ -808,7 +808,7 @@ router.get(
 
         try {
             const [message] = await promisePool.query(
-                `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}' ORDER BY msg_time`
+                `SELECT from_user, to_user, msg_time, text, msg_key from message where record_id = '${record_id}' ORDER BY msg_time`
             );
 
             for (let i = 0; i < message.length; i++) {
@@ -825,7 +825,7 @@ router.get(
                 }
                 let time = getDate(message[i].msg_time);
                 message[i].msg_time = time;
-      
+
 
                 let [from_rows] = await promisePool.query(
                     `SELECT role from login where user_name = '${from_user}'`
@@ -954,7 +954,7 @@ router.get(
             record_id = id[0].record_id;
 
             const [message] = await promisePool.query(
-                `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}'`
+                `SELECT from_user, to_user, msg_time, text, msg_key from message where record_id = '${record_id}'`
             );
 
             for (let i = 0; i < message.length; i++) {
