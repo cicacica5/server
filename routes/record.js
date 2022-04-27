@@ -628,7 +628,7 @@ router.get(
             if(ur == "counsellor"){
                 const [result] = await promisePool.query(
                     `SELECT counsellor.coun_id, counsellor.coun_name, login.role,
-                            ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))/60) AS today_time
+                            ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))) AS today_time
                      FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
                                      LEFT JOIN record ON counsellor.coun_id = record.coun_id
                      WHERE counsellor.coun_id = ${user_id}`
@@ -638,7 +638,7 @@ router.get(
             } else if(ur == "supervisor"){
                 const [result] = await promisePool.query(
                     `SELECT supervisor.sup_id, supervisor.sup_name, login.role, 
-                            ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))/60) AS today_time
+                            ROUND(SUM(IF(DateDiff(record.begin_time,CURRENT_DATE())=0, record.period, 0))) AS today_time
                      FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
                                      LEFT JOIN record ON supervisor.sup_id = record.sup_id
                      WHERE supervisor.sup_id = ${user_id}`
@@ -680,7 +680,7 @@ router.get(
             if(ur == "counsellor"){
                 const [result] = await promisePool.query(
                     `SELECT counsellor.coun_id, counsellor.coun_name, login.role,
-                            COUNT(record.record_id OR NULL) AS all_num, ROUND(SUM(record.period)/60) AS all_minitus
+                            COUNT(record.record_id OR NULL) AS all_num, ROUND(SUM(record.period)) AS all_seconds
                      FROM counsellor JOIN login ON login.user_id = counsellor.coun_id
                                      LEFT JOIN record ON counsellor.coun_id = record.coun_id
                      WHERE counsellor.coun_id = ${user_id}`
@@ -690,7 +690,7 @@ router.get(
             } else if(ur == "supervisor"){
                 const [result] = await promisePool.query(
                     `SELECT supervisor.sup_id, supervisor.sup_name, login.role, 
-                            COUNT(record.record_id OR NULL) AS all_num, ROUND(SUM(record.period)/60) AS all_minitus
+                            COUNT(record.record_id OR NULL) AS all_num, ROUND(SUM(record.period)) AS all_seconds
                      FROM supervisor JOIN login ON login.user_id = supervisor.sup_id
                                      LEFT JOIN record ON supervisor.sup_id = record.sup_id
                      WHERE supervisor.sup_id = ${user_id}`
@@ -814,7 +814,6 @@ router.get(
                 from_user = message[i].from_user;
                 to_user = message[i].to_user;
 
-                console.log(message[i].msg_time);
                 // 时间格式转换
                 function getDate(n) {
                     let msg_ts = new Date(n),
@@ -824,7 +823,6 @@ router.get(
                     return y + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d) + " " + msg_ts.toTimeString().substr(0, 8);
                 }
                 let time = getDate(message[i].msg_time);
-                console.log(time);
                 message[i].msg_time = time;
       
 
