@@ -359,8 +359,8 @@ router.post(
 // @access  Public
 router.get(
     "/recordID", [
-        check("visitor", "访客的user_name is required").notEmpty(),
-        check("coun", "咨询师的user_name is required").notEmpty(),
+        check("from_user", "发送方的user_name is required").notEmpty(),
+        check("to_user", "接收方的user_name is required").notEmpty(),
     ],
     async(req, res) => {
         // Check for errors
@@ -371,43 +371,58 @@ router.get(
         }
 
         // Extract info from the body
-        let visitor = req.query.visitor;
-        let coun = req.query.coun;
-        let visitor_id = 0;
-        let coun_id = 0;
+        let from_user = req.query.from_user;
+        let to_user = req.query.to_user;
+        let from_role = "default";
+        let to_role = "default";
+        let from_id = 0;
+        let to_id = 0;
+        let record_id = 0;
 
         try {
-            const [v_id] = await promisePool.query(
-            `SELECT user_id, role from login where user_name = '${visitor}'`
+
+            let [from_rows] = await promisePool.query(
+                `SELECT role, user_id from login where user_name = '${from_user}'`
             );
+            from_role = from_rows[0].role;
+            from_id = from_rows[0].user_id;
 
-            let v_role = v_id[0].role;
+            let [to_rows] = await promisePool.query(
+                `SELECT role, user_id from login where user_name = '${to_user}'`
+            );
+            to_role = to_rows[0].role;
+            to_id = from_rows[0].user_id;
 
-            if(v_role == "visitor")  {
-                visitor_id = v_id[0].user_id;
-            } else {
-                return res.status(401).json({ msg: "visitor不是访客的user_name！！" });
+            if (from_role == "visitor") {
+                return res.status(401).json({msg: "发送方不能为访客！！"});
+            } else if (from_role == "counsellor") {
+                if(to_role == "visitor"){
+                    let [rows] = await promisePool.query(
+                        `SELECT record_id from record where visitor_id = '${to_id}' and coun_id = '${from_id}'
+                 ORDER BY begin_time desc LIMIT 1`
+                    );
+                    record_id = rows[0].record_id;
+                } else if(to_role == "supervisor") {
+                    let [rows] = await promisePool.query(
+                        `SELECT record_id from record where coun_id = '${from_id}' and sup_id = '${to_id}'
+                 ORDER BY begin_time desc LIMIT 1`
+                    );
+                    record_id = rows[0].record_id;
+                } else {
+                    return res.status(401).json({msg: "发送方为咨询师时接收方不能为咨询师！！"});
+                }
+            } else if (from_role == "supervisor") {
+                if(to_role == "counsellor"){
+                    let [rows] = await promisePool.query(
+                        `SELECT record_id from record where coun_id = '${to_id}' and sup_id = '${from_id}'
+                 ORDER BY begin_time desc LIMIT 1`
+                    );
+                    record_id = rows[0].record_id;
+                } else {
+                    return res.status(401).json({msg: "发送方为督导时接收方只能为咨询师！！"});
+                }
             }
 
-            const [c_id] = await promisePool.query(
-                `SELECT user_id, role from login where user_name = '${coun}'`
-            );
-
-            let c_role = c_id[0].role;
-
-            if(c_role == "counsellor")  {
-                coun_id = c_id[0].user_id;
-            } else {
-                return res.status(401).json({ msg: "coun不是咨询师的user_name！！" });
-            }
-
-            const [id] = await promisePool.query(
-                `SELECT record_id from record where visitor_id = '${visitor_id}' and coun_id = '${coun_id}'
-                 ORDER BY begin_time desc LIMIT 1
-                `
-            );
-
-            let record_id = id[0].record_id;
             res.json({record_id : record_id});
 
         } catch (err) {
