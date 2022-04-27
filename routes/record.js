@@ -21,6 +21,7 @@ const router = express.Router();
  * 获取最近n个咨询/求助记录
  * 查看/导出咨询记录
  * 同步聊天记录
+ * 获取会话进行状态
  */
 
 // @route   POST /record
@@ -1025,6 +1026,83 @@ router.get(
             }
 
             res.send(message);
+
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+
+    }
+);
+
+// @route   GET /record/endOrNot
+// @desc    获取会话进行状态
+// @access  Public
+
+router.get(
+    "/endOrNot", [
+        check("coun", "咨询师的user_name is required.").notEmpty(),
+        check("sup", "督导的user_name is required.").notEmpty(),
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({errors: errors.array()});
+        }
+
+        let coun = req.query.coun;
+        let sup = req.query.sup;
+        let coun_id = 0;
+        let sup_id = 0;
+        let record_id = 0;
+        let period = 0;
+
+        try {
+
+            const [c_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${coun}'`
+            );
+
+            let c_role = c_id[0].role;
+
+            if(c_role == "counsellor")  {
+                coun_id = c_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "coun不是咨询师的user_name！！" });
+            }
+
+            const [s_id] = await promisePool.query(
+                `SELECT user_id, role from login where user_name = '${sup}'`
+            );
+
+            let s_role = s_id[0].role;
+
+            if(s_role == "supervisor")  {
+                sup_id = s_id[0].user_id;
+            } else {
+                return res.status(401).json({ msg: "sup不是督导的user_name！！" });
+            }
+
+            const [id] = await promisePool.query(
+                `SELECT record_id from record where coun_id = '${coun_id}' and sup_id = '${sup_id}' order by begin_time desc limit 1`
+            );
+
+            record_id = id[0].record_id;
+
+            const [row] = await promisePool.query(
+                `SELECT * from record where record_id = '${record_id}'`
+            );
+
+            period = row[0].period
+
+            if (period > 0) {
+                res.json({isEnd:"true"});
+            } else {
+                res.json({isEnd:"false"});
+            }
+
 
         } catch (err) {
             // Catch errors
