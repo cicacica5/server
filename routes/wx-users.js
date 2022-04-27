@@ -373,6 +373,25 @@ router.put(
             });
       }
 
+            // Check phone
+      var reg_ph = /^1[0-9]{10}/;
+      if(!reg_ph.test(emergency_phone)){
+        return res.status(200).json(
+          {
+            "errCode": 11,
+            "errMessage": "手机号非法"
+        });
+      }
+
+      // Check visitor_name
+      var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name.test(emergency_name)){
+            return res.status(200).json({
+              "errCode": 12,
+              "errMessage": "紧急联系人名字非法"
+            });
+      }
+
       try {
         // Update details in students table
         await promisePool.query(
