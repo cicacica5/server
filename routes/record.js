@@ -1098,9 +1098,9 @@ router.get(
             period = row[0].period
 
             if (period > 0) {
-                res.json({isEnd:"true"});
+                res.json({isEnd:"true", record_id:record_id});
             } else {
-                res.json({isEnd:"false"});
+                res.json({isEnd:"false", record_id:record_id});
             }
 
 
