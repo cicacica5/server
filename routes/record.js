@@ -807,12 +807,26 @@ router.get(
 
         try {
             const [message] = await promisePool.query(
-                `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}'`
+                `SELECT from_user, to_user, msg_time, text from message where record_id = '${record_id}' ORDER BY msg_time`
             );
 
             for (let i = 0; i < message.length; i++) {
                 from_user = message[i].from_user;
                 to_user = message[i].to_user;
+
+                console.log(message[i].msg_time);
+                // 时间格式转换
+                function getDate(n) {
+                    let msg_ts = new Date(n),
+                    y = msg_ts.getFullYear(),
+                    m = msg_ts.getMonth() + 1,
+                    d = msg_ts.getDate();
+                    return y + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d) + " " + msg_ts.toTimeString().substr(0, 8);
+                }
+                let time = getDate(message[i].msg_time);
+                console.log(time);
+                message[i].msg_time = time;
+      
 
                 let [from_rows] = await promisePool.query(
                     `SELECT role from login where user_name = '${from_user}'`
