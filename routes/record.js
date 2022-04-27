@@ -455,7 +455,9 @@ router.get(
             } else {
 
                 // Send success message to the client
-                res.send(rows);
+                return res.status(200).json({
+                    "RecordList": rows
+                });
             }
         } catch (err) {
             // Catch errors
