@@ -220,13 +220,13 @@ router.post(
         // Return the errors
         return res.status(400).json({ errors: errors.array() });
       }
-  
+
       // Extract info from the body
       let {
         user_id,
         status,
       } = req.body;
-  
+
         // Check status
         if (status !== "normal" && status !== "banned"){
                 return res.status(401).json({ msg : "Error status."});
@@ -238,18 +238,18 @@ router.post(
           `SELECT EXISTS(SELECT * from login WHERE user_id = "${user_id}" ) "EXISTS" FROM dual`
         );
         const result = rows[0];
-  
+
         if (!result) {
           // User already exists
           return res.status(400).json({ msg : "User doesn't exist."});
-        } 
+        }
 
 
         await promisePool.query(
             `UPDATE visitor SET visitor_status='${status}'
                       WHERE visitor_id=${user_id}`
           );
-  
+
           return res.status(200).json({ msg :"status change success"});
 
       } catch (err) {
@@ -552,7 +552,7 @@ router.get(
 });
 
 // @route   GET /admin/TodayCounOnDuty
-// @desc    当天排班咨询师人数
+// @desc    当月排班咨询师人数
 // @access  Private
 
 router.get("/TodayCounOnDuty", [
@@ -581,6 +581,52 @@ router.get("/TodayCounOnDuty", [
                 );
                     // Send success message to the client
                     res.json(result);
+            } else {
+                return res.status(401).json({ msg: "仅限管理员访问！！" });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+// @route   GET /admin/MonthCounOnDuty
+// @desc    某月排班咨询师人数
+// @access  Private
+
+router.get("/MonthCounOnDuty", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+        check(
+            "date",
+            "Please enter a valid date"
+        ).isDate(), // Check the date
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        const date = req.query.date;
+
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = rows[0].role;
+            if(role == "admin"){
+                const [result] = await promisePool.query(
+                    `SELECT schedule.date, COUNT(schedule.user_id) AS coun_num
+                     FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                     WHERE login.role = "counsellor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT(date,'%Y%m'))
+                     GROUP BY schedule.date`
+                );
+                // Send success message to the client
+                res.json(result);
             } else {
                 return res.status(401).json({ msg: "仅限管理员访问！！" });
             }
@@ -714,7 +760,7 @@ router.get(
         } else {
             return res.status(401).json({ msg: "User not exists." });
         }
-        
+
         try {
 
 
@@ -791,7 +837,7 @@ router.get(
 
             // Send success message to the client
             res.send(results);
-        
+
         } catch (err) {
             // Catch errors
             throw err;
