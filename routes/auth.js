@@ -191,7 +191,7 @@ router.post(
             // Check if result is false
             if (!result) {
                 // User doesn't exist
-                return res.status(400).json({ msg: "Invalid Credentials" });
+                return res.status(402).json({ msg: "用户名或密码错误" });
             } else {
                 // Get user details from DB
                 const [rows] = await promisePool.query(
@@ -206,7 +206,7 @@ router.post(
 
                 if (!isMatch) {
                     // Password doesn't match
-                    return res.status(400).json({ msg: "Invalid Credentials" });
+                    return res.status(402).json({ msg: "用户名或密码错误" });
                 } else {
                     // Store user_id in payload for token
                     const payload = {
@@ -225,14 +225,14 @@ router.post(
                         );
                         let status = coun[0].coun_status;
                         if(status == "banned")
-                            return res.status(400).json({ msg: "User is Logged off." });
+                            return res.status(402).json({ msg: "账号已被禁用" });
                     } else if(role == "supervisor"){
                         const [sup] = await promisePool.query(
                             `SELECT sup_status from supervisor WHERE sup_id = '${user_id}'`
                         );
                         let status = sup[0].sup_status;
                         if(status == "banned")
-                            return res.status(400).json({ msg: "User is Logged off." });
+                            return res.status(402).json({ msg: "账号已被禁用" });
                     }
 
                     // Create a token
