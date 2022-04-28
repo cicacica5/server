@@ -191,7 +191,7 @@ router.post(
             // Check if result is false
             if (!result) {
                 // User doesn't exist
-                return res.status(402).json({ msg: "用户不存在" });
+                return res.status(402).json({ msg: "用户名或密码错误" });
             } else {
                 // Get user details from DB
                 const [rows] = await promisePool.query(
@@ -206,7 +206,7 @@ router.post(
 
                 if (!isMatch) {
                     // Password doesn't match
-                    return res.status(402).json({ msg: "密码错误" });
+                    return res.status(402).json({ msg: "用户名或密码错误" });
                 } else {
                     // Store user_id in payload for token
                     const payload = {
