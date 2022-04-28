@@ -576,11 +576,19 @@ router.get("/TodayCounOnDuty", [
                 const [result] = await promisePool.query(
                     `SELECT schedule.date, COUNT(schedule.user_id) AS coun_num
                      FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                                   LEFT JOIN counsellor ON schedule.user_id = counsellor.coun_id
                      WHERE login.role = "counsellor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT(CURDATE(),'%Y%m'))
+                           AND counsellor.coun_status != "banned"
                      GROUP BY schedule.date`
                 );
+                let row = result[0];
+                if(!row){
+                    return res.status(401).json({ msg: "该月暂无排班" });
+                } else {
                     // Send success message to the client
                     res.json(result);
+                }
+
             } else {
                 return res.status(401).json({ msg: "仅限管理员访问！！" });
             }
@@ -622,11 +630,19 @@ router.get("/MonthCounOnDuty", [
                 const [result] = await promisePool.query(
                     `SELECT schedule.date, COUNT(schedule.user_id) AS coun_num
                      FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                                   LEFT JOIN counsellor ON schedule.user_id = counsellor.coun_id
                      WHERE login.role = "counsellor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT('${date}','%Y%m'))
+                           AND counsellor.coun_status != "banned"
                      GROUP BY schedule.date`
                 );
-                // Send success message to the client
-                res.json(result);
+                let row = result[0];
+                if(!row){
+                    return res.status(401).json({ msg: "该月暂无排班" });
+                } else {
+                    // Send success message to the client
+                    res.json(result);
+                }
+
             } else {
                 return res.status(401).json({ msg: "仅限管理员访问！！" });
             }
@@ -638,7 +654,7 @@ router.get("/MonthCounOnDuty", [
 );
 
 // @route   GET /admin/TodaySupOnDuty
-// @desc    当天排班督导人数
+// @desc    当月排班督导人数
 // @access  Private
 
 router.get("/TodaySupOnDuty", [
@@ -662,11 +678,20 @@ router.get("/TodaySupOnDuty", [
                 const [result] = await promisePool.query(
                     `SELECT schedule.date, COUNT(schedule.user_id) AS sup_num
                      FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                                   LEFT JOIN supervisor ON schedule.user_id = supervisor.sup_id
                      WHERE login.role = "supervisor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT(CURDATE(),'%Y%m'))
+                           AND supervisor.sup_status != "banned"
                      GROUP BY schedule.date`
                 );
+
+                let row = result[0];
+                if(!row){
+                    return res.status(401).json({ msg: "该月暂无排班" });
+                } else {
                     // Send success message to the client
                     res.json(result);
+                }
+
             } else {
                 return res.status(401).json({ msg: "仅限管理员访问！！" });
             }
@@ -708,11 +733,19 @@ router.get("/MonthSupOnDuty", [
                 const [result] = await promisePool.query(
                     `SELECT schedule.date, COUNT(schedule.user_id) AS sup_num
                      FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                                   LEFT JOIN supervisor ON schedule.user_id = supervisor.sup_id
                      WHERE login.role = "supervisor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT('${date}','%Y%m'))
+                           AND supervisor.sup_status != "banned"
                      GROUP BY schedule.date`
                 );
-                // Send success message to the client
-                res.json(result);
+                let row = result[0];
+                if(!row){
+                    return res.status(401).json({ msg: "该月暂无排班" });
+                } else {
+                    // Send success message to the client
+                    res.json(result);
+                }
+
             } else {
                 return res.status(401).json({ msg: "仅限管理员访问！！" });
             }
