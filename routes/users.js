@@ -51,7 +51,7 @@ router.post(
 
       // Check role
       if (role !== "admin") {
-        return res.status(400).json({ msg: "Role is not valid" });
+        return res.status(402).json({ msg: "Role is not valid" });
       }
 
       // Check gender
@@ -60,24 +60,24 @@ router.post(
           admin_gender !== "Female" &&
           admin_gender !== "Other"
       ) {
-        return res.status(400).json({ msg: "Gender is not valid" });
+        return res.status(402).json({ msg: "性别不合法" });
       }
 
       // Check admin_name
       var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
       if(!reg_name.test(admin_name)){
-        return res.status(400).json({ msg: "姓名不合法"});
+        return res.status(402).json({ msg: "姓名不合法"});
       }
       // Check user_name
       var reg_userN = /^[a-zA-Z_]+$/;
       if(!reg_userN.test(user_name)){
-        return res.status(400).json({ msg: "用户名不合法"});
+        return res.status(402).json({ msg: "用户名不合法"});
       }
 
       // Check phone
       var reg_ph = /^1[0-9]{10}/;
       if(!reg_ph.test(admin_phone)){
-        return res.status(400).json({ msg: "手机号不合法" });
+        return res.status(402).json({ msg: "手机号不合法" });
       }
 
       try {
@@ -89,7 +89,7 @@ router.post(
 
         if (result) {
           // User already exists
-          return res.status(400).json({ msg: "User already exists" });
+          return res.status(402).json({ msg: "User already exists" });
         } else {
           // Encrypt Password
           const salt = await bcrypt.genSalt(10);
@@ -177,7 +177,7 @@ router.post(
 
       // Check role
       if (role !== "counsellor") {
-        return res.status(400).json({ msg: "Role is not valid" });
+        return res.status(402).json({ msg: "Role is not valid" });
       }
 
       // Check gender
@@ -186,31 +186,31 @@ router.post(
           coun_gender !== "Female" &&
           coun_gender !== "Other"
       ) {
-        return res.status(400).json({ msg: "性别不合法" });
+        return res.status(402).json({ msg: "性别不合法" });
       }
 
       // Check identity
       var reg_id = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
       if(!reg_id.test(coun_identity)){
-        return res.status(400).json({ msg: "身份证不合法" });
+        return res.status(402).json({ msg: "身份证不合法" });
       }
 
       // Check phone
       var reg_ph = /^1[0-9]{10}/;
       if(!reg_ph.test(coun_phone)){
-          return res.status(400).json({ msg: "手机号不合法" });
+          return res.status(402).json({ msg: "手机号不合法" });
       }
 
       // Check counsellor_name
       var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
       if(!reg_name.test(coun_name)){
-        return res.status(400).json({ msg: "姓名不合法"});
+        return res.status(402).json({ msg: "姓名不合法"});
       }
       
       // Check user_name
       var reg_userN = /^[a-zA-Z_]+$/;
       if(!reg_userN.test(user_name)){
-        return res.status(400).json({ msg: "用户名不合法"});
+        return res.status(402).json({ msg: "用户名不合法"});
       }
 
       try {
@@ -222,7 +222,7 @@ router.post(
 
         if (result) {
           // User already exists
-          return res.status(400).json({ msg: "User already exists" });
+          return res.status(402).json({ msg: "User already exists" });
         } else {
           // Encrypt Password
           const salt = await bcrypt.genSalt(10);
@@ -314,7 +314,7 @@ router.post(
 
       // Check role
       if (role !== "supervisor") {
-        return res.status(400).json({ msg: "Role is not valid" });
+        return res.status(402).json({ msg: "Role is not valid" });
       }
 
       // Check gender
@@ -323,30 +323,30 @@ router.post(
           sup_gender !== "Female" &&
           sup_gender !== "Other"
       ) {
-        return res.status(400).json({ msg: "性别不合法" });
+        return res.status(402).json({ msg: "性别不合法" });
       }
 
       // Check identity
       var reg = /^[1-9]\d{5}(18|19|20|(3\d))\d{2}((0[1-9])|(1[0-2]))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/;
       if(!reg.test(sup_identity)){
-        return res.status(400).json({ msg: "身份证不合法" });
+        return res.status(402).json({ msg: "身份证不合法" });
       }
 
       // Check phone
       var reg_ph = /^1[0-9]{10}/;
       if(!reg_ph.test(sup_phone)){
-        return res.status(400).json({ msg: "手机号不合法" });
+        return res.status(402).json({ msg: "手机号不合法" });
       }
 
       // Check sup_name
       var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
       if(!reg_name.test(sup_name)){
-        return res.status(400).json({ msg: "姓名不合法"});
+        return res.status(402).json({ msg: "姓名不合法"});
       }
       // Check user_name
       var reg_userN = /^[a-zA-Z_]+$/;
       if(!reg_userN.test(user_name)){
-        return res.status(400).json({ msg: "用户名不合法"});
+        return res.status(402).json({ msg: "用户名不合法"});
       }
 
       try {
@@ -358,7 +358,7 @@ router.post(
 
         if (result) {
           // User already exists
-          return res.status(400).json({ msg: "User already exists" });
+          return res.status(402).json({ msg: "User already exists" });
         } else {
           // Encrypt Password
           const salt = await bcrypt.genSalt(10);
