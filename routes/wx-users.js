@@ -477,6 +477,7 @@ router.get(
               counsellor.coun_status, round(avg(score),2) as coun_avg_score
        FROM counsellor LEFT JOIN feed ON counsellor.coun_id = feed.coun_id
                        LEFT JOIN login ON counsellor.coun_id = login.user_id
+       WHERE counsellor.coun_status = "free" OR counsellor.coun_status = "busy"
        GROUP BY counsellor.coun_id`
     );
 
