@@ -355,8 +355,8 @@ router.put(
       }
 
       // Check phone
-      var reg_ph = /^1[0-9]{10}/;
-      if(!reg_ph.test(visitor_phone)){
+      var reg_ph1 = /^1[0-9]{10}/;
+      if(!reg_ph1.test(visitor_phone)){
         return res.status(200).json(
           {
             "errCode": 11,
@@ -365,11 +365,30 @@ router.put(
       }
 
       // Check visitor_name
-      var reg_name = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
-      if(!reg_name.test(visitor_name)){
+      var reg_name1 = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name1.test(visitor_name)){
             return res.status(200).json({
               "errCode": 12,
               "errMessage": "visitor_name非法"
+            });
+      }
+
+      // Check emergency_phone
+      var reg_ph2 = /^1[0-9]{10}/;
+      if(!reg_ph2.test(emergency_phone)){
+        return res.status(200).json(
+          {
+            "errCode": 11,
+            "errMessage": "手机号非法"
+        });
+      }
+
+      // Check emergency_name
+      var reg_name2 = /^[^\\;!@#$%\^&\*\(\)￥……（）]{2,32}$/;
+      if(!reg_name2.test(emergency_name)){
+            return res.status(200).json({
+              "errCode": 12,
+              "errMessage": "紧急联系人名字非法"
             });
       }
 
