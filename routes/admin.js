@@ -58,6 +58,7 @@ router.get("/counsellorList", [
                     `SELECT counsellor.coun_id,
                             counsellor.coun_name,
                             login.user_name,
+                            counsellor.coun_status,
                             counsellor.coun_gender,
                             counsellor.coun_phone,
                             counsellor.coun_age,
@@ -71,6 +72,7 @@ router.get("/counsellorList", [
                      FROM counsellor LEFT JOIN feed ON counsellor.coun_id = feed.coun_id
                                      LEFT JOIN record ON counsellor.coun_id = record.coun_id AND feed_id = record_id
                                      JOIN login ON counsellor.coun_id = login.user_id
+                     WHERE counsellor.coun_status != "banned"
                      GROUP BY counsellor.coun_id
                     `);
 
@@ -120,6 +122,7 @@ router.get("/supervisorList", [
                 const [supervisors] = await promisePool.query(`SELECT supervisor.sup_id,
                                                                       supervisor.sup_name,
                                                                       login.user_name,
+                                                                      supervisor.sup_status,
                                                                       supervisor.sup_gender,
                                                                       supervisor.sup_phone,
                                                                       supervisor.sup_age,
@@ -134,6 +137,7 @@ router.get("/supervisorList", [
                                                                FROM supervisor
                                                                         LEFT JOIN record ON supervisor.sup_id = record.sup_id
                                                                         LEFT JOIN login ON supervisor.sup_id = login.user_id
+                                                               WHERE supervisor.sup_status != "banned"
                                                                GROUP BY supervisor.sup_id
                                                                HAVING supervisor.sup_id <> -1
                                                                `);
