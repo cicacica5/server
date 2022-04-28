@@ -94,7 +94,11 @@ router.get(
         try {
             // Check if date exists
             const [rows] = await promisePool.query(
-                `SELECT coun_id, coun_name, coun_gender, coun_phone, coun_status FROM schedule INNER JOIN login ON schedule.user_id = login.user_id INNER JOIN counsellor ON schedule.user_id = coun_id WHERE date = "${date}"`
+                `SELECT coun_id, coun_name, coun_gender, coun_phone, coun_status 
+                 FROM schedule INNER JOIN login ON schedule.user_id = login.user_id
+                               INNER JOIN counsellor ON schedule.user_id = coun_id
+                 WHERE date = "${date}" AND counsellor.coun_status != "banned"
+                 `
             );
             const result = rows[0];
 
@@ -137,7 +141,11 @@ router.get(
         try {
             // Check if date exists
             const [rows] = await promisePool.query(
-                `SELECT sup_id, sup_name, sup_gender, sup_phone, sup_status FROM schedule INNER JOIN login ON schedule.user_id = login.user_id INNER JOIN supervisor ON schedule.user_id = sup_id WHERE date = "${date}"`
+                `SELECT sup_id, sup_name, sup_gender, sup_phone, sup_status
+                 FROM schedule INNER JOIN login ON schedule.user_id = login.user_id
+                               INNER JOIN supervisor ON schedule.user_id = sup_id
+                 WHERE date = "${date}" AND supervisor.sup_status != "banned"
+                 `
             );
             const result = rows[0];
 

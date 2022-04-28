@@ -235,7 +235,7 @@ router.get("/bindSupervisorList", [
                     `SELECT user_name, sup_name, supervisor.sup_id
                      FROM supervisor INNER JOIN bind ON supervisor.sup_id = bind.sup_id
                                      LEFT JOIN login ON supervisor.sup_id = user_id
-                     WHERE coun_id = "${user_id}"
+                     WHERE coun_id = "${user_id}" AND supervisor.sup_status != "banned"
                     `);
 
                 // Send data to the client
