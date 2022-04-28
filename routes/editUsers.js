@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs"); // Encrypt password
 const auth = require("../middleware/auth"); // Middleware
 const { check, validationResult } = require("express-validator"); // Check and validate the inputs
 const promisePool = require("../config/db"); // Import instance of mysql pool
+const { ResultWithContext } = require("express-validator/src/chain");
 
 // Init router
 const router = express.Router();
@@ -129,8 +130,9 @@ router.put(
 // @access  Private
 router.put(
     "/counsellor", [
+        check("user_id", "请填写用户id").notEmpty(),
         check("user_name", "请填写正确的用户名").isLength({max:32, min:2}), // Check the user_name
-        check("user_password","密码需要至少6位").isLength({ min:  6}), // Check the password
+        //check("user_password","密码需要至少6位").isLength({ min:  6}), // Check the password
         check("coun_name", "请填写姓名").notEmpty(), // Check the coun_name
         check("coun_gender", "请填写性别").notEmpty(), // Check the gender
         check("coun_phone", "手机号不正确").isLength(11), // Check the phone
@@ -153,7 +155,7 @@ router.put(
             let {
                 user_id,
                 user_name,
-                user_password,
+                //user_password,
                 coun_name,
                 coun_gender,
                 coun_phone,
@@ -169,7 +171,7 @@ router.put(
             const user = {
                 user_id,
                 user_name,
-                user_password,
+                //user_password,
                 coun_name,
                 coun_gender,
                 coun_phone,
@@ -216,7 +218,7 @@ router.put(
 
             // Check if user exists
             const [rows] = await promisePool.query(
-                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id}) "EXISTS" FROM DUAL`
+                `SELECT EXISTS(SELECT * from login WHERE user_id=${user_id}) "EXISTS" FROM dual`
             );
             const result = rows[0].EXISTS;
 
@@ -224,13 +226,14 @@ router.put(
                 // User doesn't exists
                 return res.status(400).json({ msg: "User doesn't exists" });
             } else {
+
                 // Encrypt Password
-                const salt = await bcrypt.genSalt(10);
-                user_password = await bcrypt.hash(user_password, salt);
+                // const salt = await bcrypt.genSalt(10);
+                // user_password = await bcrypt.hash(user_password, salt);
 
                 // Update details in logins table
                 await promisePool.query(
-                    `UPDATE login SET user_name='${user_name}', user_password='${user_password}' WHERE user_id=${user_id}`
+                    `UPDATE login SET user_name='${user_name}' WHERE user_id=${user_id}`
                 );
 
                 // Update details in counsellors table
@@ -263,7 +266,7 @@ router.put(
 router.put(
     "/supervisor", [
         check("user_name", "请填写正确的用户名").notEmpty(), // Check the user_name
-        check("user_password","密码需要至少6位").isLength({ min: 6 }), // Check the password
+        //check("user_password","密码需要至少6位").isLength({ min: 6 }), // Check the password
         check("sup_name", "请填写姓名").notEmpty(), // Check the sup_name
         check("sup_gender", "请填写性别").notEmpty(), // Check the gender
         check("sup_phone", "手机号不正确").isLength(11), // Check the phone
@@ -289,7 +292,7 @@ router.put(
             let {
                 user_id,
                 user_name,
-                user_password,
+                //user_password,
                 sup_name,
                 sup_gender,
                 sup_phone,
@@ -307,7 +310,7 @@ router.put(
             const user = {
                 user_id,
                 user_name,
-                user_password,
+                //user_password,
                 sup_name,
                 sup_gender,
                 sup_phone,
@@ -371,7 +374,7 @@ router.put(
                 try {
                     // Update details in logins table
                     await promisePool.query(
-                        `UPDATE login SET user_name='${user_name}', user_password='${user_password}' WHERE user_id=${user_id}`
+                        `UPDATE login SET user_name='${user_name}' WHERE user_id=${user_id}`
                     );
 
                     // Update details in students table
