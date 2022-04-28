@@ -677,6 +677,53 @@ router.get("/TodaySupOnDuty", [
     }
 );
 
+// @route   GET /admin/MonthSupOnDuty
+// @desc    某月排班督导人数
+// @access  Private
+
+router.get("/TodaySupOnDuty", [
+        check("user_id", "user_id is required.").notEmpty(), // check user_id
+        check(
+            "date",
+            "Please enter a valid date"
+        ).isDate(), // Check the date
+    ],
+    async(req, res) => {
+        // Check for errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            // Return the errors
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const user_id = req.query.user_id;
+        const date = req.query.date;
+
+        try {
+            const [rows] = await promisePool.query(
+                `SELECT role FROM login WHERE user_id = ${user_id}`
+            )
+            const role = rows[0].role;
+            if(role == "admin"){
+                const [result] = await promisePool.query(
+                    `SELECT schedule.date, COUNT(schedule.user_id) AS sup_num
+                     FROM schedule LEFT JOIN login ON schedule.user_id = login.user_id
+                     WHERE login.role = "supervisor" AND (DATE_FORMAT(schedule.date,'%Y%m') = DATE_FORMAT(date,'%Y%m'))
+                     GROUP BY schedule.date`
+                );
+                // Send success message to the client
+                res.json(result);
+            } else {
+                return res.status(401).json({ msg: "仅限管理员访问！！" });
+            }
+        } catch (err) {
+            // Catch errors
+            throw err;
+        }
+    }
+);
+
+
 // @route   GET /admin/todayNum
 // @desc    当天咨询次数
 // @access  Public
