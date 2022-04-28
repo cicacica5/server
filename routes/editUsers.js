@@ -26,10 +26,7 @@ router.put(
     "/admin", [
         //auth,
         check("user_name", "请填写正确的用户名").isLength({max:32, min:2}), // Check the user_name
-        check(
-            "user_password",
-            "密码需要至少6位"
-        ).isLength({ min: 6 }), // Check the password
+        check("user_password","密码需要至少6位").isLength({ min: 6 }), // Check the password
         check("admin_name", "请填写姓名").notEmpty(), // Check the admin_name
         check("admin_gender", "请填写性别").notEmpty(), // Check the gender
         check("admin_phone", "手机号不正确").isLength(11), // Check the phone
