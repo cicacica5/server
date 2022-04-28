@@ -1009,7 +1009,7 @@ router.get(
             record_id = id[0].record_id;
 
             const [message] = await promisePool.query(
-                `SELECT from_user, to_user, msg_time, text, msg_key from message where record_id = '${record_id}'`
+                `SELECT from_user, to_user, msg_time, text, msg_key from message where record_id = '${record_id}' order by msg_time`
             );
 
             for (let i = 0; i < message.length; i++) {
