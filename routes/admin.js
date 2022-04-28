@@ -426,6 +426,7 @@ try {
                         counsellor.coun_title,
                         COUNT(IF(DATE_FORMAT(record.end_time,'%Y%m')=DATE_FORMAT(CURDATE(),'%Y%m'), record.record_id, null)) as total_num_thisMonth
                  FROM counsellor LEFT JOIN record ON counsellor.coun_id = record.coun_id
+                 WHERE counsellor.coun_status != "banned"
                  GROUP BY counsellor.coun_id
                  ORDER BY total_num_thisMonth DESC
             `);
@@ -482,6 +483,7 @@ try {
                         counsellor.coun_title,
                         ROUND(avg(feed.score),2) as avg_score
                  FROM counsellor LEFT JOIN feed ON counsellor.coun_id = feed.coun_id
+                 WHERE counsellor.coun_status != "banned"
                  GROUP BY counsellor.coun_id
                  ORDER BY avg_score DESC
             `);
