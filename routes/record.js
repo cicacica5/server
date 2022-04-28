@@ -397,27 +397,64 @@ router.get(
                 return res.status(401).json({msg: "发送方不能为访客！！"});
             } else if (from_role == "counsellor") {
                 if(to_role == "visitor"){
-                    let [rows] = await promisePool.query(
-                        `SELECT record_id from record where visitor_id = '${to_id}' and coun_id = '${from_id}'
-                 ORDER BY begin_time desc LIMIT 1`
+                    let [r] = await promisePool.query(
+                        `SELECT EXISTS(SELECT record_id from record where visitor_id = '${to_id}' and coun_id = '${from_id}'
+                 ORDER BY begin_time desc LIMIT 1) "EXISTS" FROM dual`
                     );
-                    r_id = rows[0].record_id;
+
+                    let result = r[0].EXISTS;
+
+                    if (!result) {
+                        return res.status(403).json({ msg : "记录不存在！！", record_id:-1});
+                    } else {
+                        let [rows] = await promisePool.query(
+                            `SELECT record_id from record where visitor_id = '${to_id}' and coun_id = '${from_id}'
+                 ORDER BY begin_time desc LIMIT 1`
+                        );
+
+                        r_id = rows[0].record_id;
+                    }
+
                 } else if(to_role == "supervisor") {
-                    let [rows] = await promisePool.query(
-                        `SELECT record_id from record where coun_id = '${from_id}' and sup_id = '${to_id}'
-                 ORDER BY begin_time desc LIMIT 1`
+                    let [r] = await promisePool.query(
+                        `SELECT EXISTS(SELECT record_id from record where coun_id = '${from_id}' and sup_id = '${to_id}'
+                 ORDER BY begin_time desc LIMIT 1) "EXISTS" FROM dual`
                     );
-                    r_id = rows[0].record_id;
+
+                    let result = r[0].EXISTS;
+
+                    if (!result) {
+                        return res.status(403).json({ msg : "记录不存在！！", record_id:-1});
+                    } else {
+                        let [rows] = await promisePool.query(
+                            `SELECT record_id from record where coun_id = '${from_id}' and sup_id = '${to_id}'
+                 ORDER BY begin_time desc LIMIT 1`
+                        );
+
+                        r_id = rows[0].record_id;
+                    }
                 } else {
                     return res.status(401).json({msg: "发送方为咨询师时接收方不能为咨询师！！"});
                 }
             } else if (from_role == "supervisor") {
                 if(to_role == "counsellor"){
-                    let [rows] = await promisePool.query(
-                        `SELECT record_id from record where coun_id = '${to_id}' and sup_id = '${from_id}'
-                 ORDER BY begin_time desc LIMIT 1`
+                    let [r] = await promisePool.query(
+                        `SELECT EXISTS(SELECT record_id from record where coun_id = '${to_id}' and sup_id = '${from_id}'
+                 ORDER BY begin_time desc LIMIT 1) "EXISTS" FROM dual`
                     );
-                    r_id = rows[0].record_id;
+
+                    let result = r[0].EXISTS;
+
+                    if (!result) {
+                        return res.status(403).json({ msg : "记录不存在！！", record_id:-1});
+                    } else {
+                        let [rows] = await promisePool.query(
+                            `SELECT record_id from record where coun_id = '${to_id}' and sup_id = '${from_id}'
+                 ORDER BY begin_time desc LIMIT 1`
+                        );
+
+                        r_id = rows[0].record_id;
+                    }
                 } else {
                     return res.status(401).json({msg: "发送方为督导时接收方只能为咨询师！！"});
                 }
