@@ -129,7 +129,10 @@ router.get("/bindCounsellorList", [
 
             if (role == "supervisor") { // Check if the user is supervisor
                 // Get all students from the DB
-                const [counsellors] = await promisePool.query(`SELECT * FROM counsellor INNER JOIN bind ON counsellor.coun_id = bind.coun_id WHERE sup_id = "${user_id}"`);
+                const [counsellors] = await promisePool.query(
+                    `SELECT * FROM counsellor INNER JOIN bind ON counsellor.coun_id = bind.coun_id
+                     WHERE sup_id = "${user_id}" AND counsellor.coun_status != "banned"
+                    `);
 
                 // Send data to the client
                 res.json(counsellors);
