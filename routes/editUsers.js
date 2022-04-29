@@ -99,8 +99,8 @@ router.put(
                 return res.status(402).json({ msg: "User doesn't exist" });
             } else {
                 // Encrypt Password
-                const salt = await bcrypt.genSalt(10);
-                user_password = await bcrypt.hash(user_password, salt);
+                // const salt = await bcrypt.genSalt(10);
+                // user_password = await bcrypt.hash(user_password, salt);
 
                 // Update details in logins table
                 await promisePool.query(
@@ -365,8 +365,8 @@ router.put(
                 return res.status(402).json({ msg: "User doesn't exists" });
             } else {
                 // Encrypt Password
-                const salt = await bcrypt.genSalt(10);
-                user_password = await bcrypt.hash(user_password, salt);
+                // const salt = await bcrypt.genSalt(10);
+                // user_password = await bcrypt.hash(user_password, salt);
 
                 try {
                     // Update details in logins table
